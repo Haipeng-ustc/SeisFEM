@@ -1,5 +1,5 @@
 
-int mesh_element_order ( char *code )
+int mesh_element_order(char *code)
 /******************************************************************************/
 /*
   Purpose:
@@ -20,37 +20,37 @@ int mesh_element_order ( char *code )
 */
 {
   int element_order;
-  if ( strcmp(code,"T3") == 0 )
+  if (strcmp(code, "T3") == 0)
   {
     element_order = 3;
   }
-  else if ( strcmp(code,"T6") == 0 )
+  else if (strcmp(code, "T6") == 0)
   {
     element_order = 6;
   }
-  else if ( strcmp(code,"T10") == 0 )
+  else if (strcmp(code, "T10") == 0)
   {
     element_order = 10;
   }
-  else if ( strcmp(code,"Q4") == 0 )
+  else if (strcmp(code, "Q4") == 0)
   {
     element_order = 4;
   }
-  else if ( strcmp(code,"Q9") == 0 )
+  else if (strcmp(code, "Q9") == 0)
   {
     element_order = 9;
   }
-  else if ( strcmp(code,"Q16") == 0 )
+  else if (strcmp(code, "Q16") == 0)
   {
     element_order = 16;
   }
   else
   {
-    fprintf ( stderr, "\n" );
-    fprintf ( stderr, "MESH_ELEMENT_ORDER - Fatal error!\n" );
-    fprintf ( stderr, "  Illegal value of CODE = \"%s\".\n", code );
+    fprintf(stderr, "\n");
+    fprintf(stderr, "MESH_ELEMENT_ORDER - Fatal error!\n");
+    fprintf(stderr, "  Illegal value of CODE = \"%s\".\n", code);
     element_order = -1;
-    exit ( 1 );
+    exit(1);
   }
 
   return element_order;

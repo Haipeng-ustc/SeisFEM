@@ -1,5 +1,5 @@
 
-int mesh_element_num ( char *code, int nelemx, int nelemy)
+int mesh_element_num(char *code, int nelemx, int nelemy)
 
 /******************************************************************************/
 /*
@@ -23,37 +23,37 @@ int mesh_element_num ( char *code, int nelemx, int nelemy)
 {
   int element_num;
 
-  if ( strcmp(code,"T3") == 0 )
+  if (strcmp(code, "T3") == 0)
   {
     element_num = 2 * nelemx * nelemy;
   }
-  else if ( strcmp(code,"T6") == 0 )
+  else if (strcmp(code, "T6") == 0)
   {
     element_num = 2 * nelemx * nelemy;
   }
-  else if ( strcmp(code,"T10") == 0 )
+  else if (strcmp(code, "T10") == 0)
   {
     element_num = 2 * nelemx * nelemy;
   }
-  else if ( strcmp(code,"Q4") == 0 )
+  else if (strcmp(code, "Q4") == 0)
   {
     element_num = nelemx * nelemy;
   }
-  else if ( strcmp(code,"Q9") == 0 )
+  else if (strcmp(code, "Q9") == 0)
   {
     element_num = nelemx * nelemy;
   }
-  else if ( strcmp(code,"Q16") == 0 )
+  else if (strcmp(code, "Q16") == 0)
   {
     element_num = nelemx * nelemy;
   }
   else
   {
-    printf ("\n" );
-    printf ("MESH_ELEMENT_NUM - Fatal error!\n" );
-    printf ("  Illegal value of CODE = \"%s\".\n", code );
+    printf("\n");
+    printf("MESH_ELEMENT_NUM - Fatal error!\n");
+    printf("  Illegal value of CODE = \"%s\".\n", code);
     element_num = -1;
-    exit ( 1 );
+    exit(1);
   }
 
   return element_num;

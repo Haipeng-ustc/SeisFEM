@@ -1,4 +1,4 @@
-double mesh_xy_q9 ( int nx, int ny, int node_num, double xmin, double xmax, double ymin, double ymax, double **node_xy)
+double mesh_xy_q9(int nx, int ny, int node_num, double xmin, double xmax, double ymin, double ymax, double **node_xy)
 
 /******************************************************************************/
 /*
@@ -41,18 +41,12 @@ double mesh_xy_q9 ( int nx, int ny, int node_num, double xmin, double xmax, doub
   int i;
   int j;
 
-for(j=0; j < 2 * ny + 1;j++)
-{
-    for(i=0; i < 2 * nx + 1;i++)
+  for (j = 0; j < 2 * ny + 1; j++)
+  {
+    for (i = 0; i < 2 * nx + 1; i++)
     {
-        node_xy[0][ i + j * (2 * nx + 1)] = i * ( xmax - xmin ) / (2.0 * nx);
-        node_xy[1][ i + j * (2 * nx + 1)] = j * ( ymax - ymin ) / (2.0 * ny);
+      node_xy[0][i + j * (2 * nx + 1)] = i * (xmax - xmin) / (2.0 * nx);
+      node_xy[1][i + j * (2 * nx + 1)] = j * (ymax - ymin) / (2.0 * ny);
     }
+  }
 }
-
-
-}
-
-
-
-

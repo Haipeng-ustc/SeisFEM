@@ -88,14 +88,14 @@ int *mesh_t3_element ( int nelemx, int nelemy )
       nw = i     +   j       * ( nelemx + 1 );
       ne = i + 1 +   j       * ( nelemx + 1 );
 
-      element_node[0+element*element_order] = sw;
-      element_node[1+element*element_order] = se;
-      element_node[2+element*element_order] = nw;
+      element_node[0 + element * element_order] = sw;
+      element_node[1 + element * element_order] = se;
+      element_node[2 + element * element_order] = nw;
       element = element + 1;
 
-      element_node[0+element*element_order] = ne;
-      element_node[1+element*element_order] = nw;
-      element_node[2+element*element_order] = se;
+      element_node[0 + element * element_order] = ne;
+      element_node[1 + element * element_order] = nw;
+      element_node[2 + element * element_order] = se;
       element = element + 1;
     }
   }

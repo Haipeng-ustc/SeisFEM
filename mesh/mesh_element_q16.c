@@ -1,5 +1,5 @@
 
-int *mesh_q16_element ( int nelemx, int nelemy )
+int *mesh_q16_element(int nelemx, int nelemy)
 
 /******************************************************************************/
 /*
@@ -53,32 +53,32 @@ int *mesh_q16_element ( int nelemx, int nelemy )
   int i;
   int j;
 
-  element_node = ( int * ) malloc ( element_order*nelemx*nelemy * sizeof ( int ) );
+  element_node = (int *)malloc(element_order * nelemx * nelemy * sizeof(int));
 
   element = 0;
- 
-  for ( j = 1; j <= nelemy; j++ )
-  {
-    for ( i = 1; i <= nelemx; i++ )
-    {
-      base = ( j - 1 ) * 3 * ( 3 * nelemx + 1 ) + 3 * i - 2;
 
-      element_node[ 0+element*element_order] = base;
-      element_node[ 1+element*element_order] = base                          + 1;
-      element_node[ 2+element*element_order] = base                          + 2;
-      element_node[ 3+element*element_order] = base                          + 3;
-      element_node[ 4+element*element_order] = base +     ( 3 * nelemx + 1 );
-      element_node[ 5+element*element_order] = base +     ( 3 * nelemx + 1 ) + 1;
-      element_node[ 6+element*element_order] = base +     ( 3 * nelemx + 1 ) + 2;
-      element_node[ 7+element*element_order] = base +     ( 3 * nelemx + 1 ) + 3;
-      element_node[ 8+element*element_order] = base + 2 * ( 3 * nelemx + 1 );
-      element_node[ 9+element*element_order] = base + 2 * ( 3 * nelemx + 1 ) + 1;
-      element_node[10+element*element_order] = base + 2 * ( 3 * nelemx + 1 ) + 2;
-      element_node[11+element*element_order] = base + 2 * ( 3 * nelemx + 1 ) + 3;
-      element_node[12+element*element_order] = base + 3 * ( 3 * nelemx + 1 );
-      element_node[13+element*element_order] = base + 3 * ( 3 * nelemx + 1 ) + 1;
-      element_node[14+element*element_order] = base + 3 * ( 3 * nelemx + 1 ) + 2;
-      element_node[15+element*element_order] = base + 3 * ( 3 * nelemx + 1 ) + 3;
+  for (j = 1; j <= nelemy; j++)
+  {
+    for (i = 1; i <= nelemx; i++)
+    {
+      base = (j - 1) * 3 * (3 * nelemx + 1) + 3 * i - 2;
+
+      element_node[0 + element * element_order] = base;
+      element_node[1 + element * element_order] = base + 1;
+      element_node[2 + element * element_order] = base + 2;
+      element_node[3 + element * element_order] = base + 3;
+      element_node[4 + element * element_order] = base + (3 * nelemx + 1);
+      element_node[5 + element * element_order] = base + (3 * nelemx + 1) + 1;
+      element_node[6 + element * element_order] = base + (3 * nelemx + 1) + 2;
+      element_node[7 + element * element_order] = base + (3 * nelemx + 1) + 3;
+      element_node[8 + element * element_order] = base + 2 * (3 * nelemx + 1);
+      element_node[9 + element * element_order] = base + 2 * (3 * nelemx + 1) + 1;
+      element_node[10 + element * element_order] = base + 2 * (3 * nelemx + 1) + 2;
+      element_node[11 + element * element_order] = base + 2 * (3 * nelemx + 1) + 3;
+      element_node[12 + element * element_order] = base + 3 * (3 * nelemx + 1);
+      element_node[13 + element * element_order] = base + 3 * (3 * nelemx + 1) + 1;
+      element_node[14 + element * element_order] = base + 3 * (3 * nelemx + 1) + 2;
+      element_node[15 + element * element_order] = base + 3 * (3 * nelemx + 1) + 3;
 
       element = element + 1;
     }

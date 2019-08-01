@@ -1,11 +1,11 @@
-# include "mesh_xy_t3.c"
-# include "mesh_xy_t6.c"
-# include "mesh_xy_t10.c"
-# include "mesh_xy_q4.c"
-# include "mesh_xy_q9.c"
-# include "mesh_xy_q16.c"
+#include "mesh_xy_t3.c"
+#include "mesh_xy_t6.c"
+#include "mesh_xy_t10.c"
+#include "mesh_xy_q4.c"
+#include "mesh_xy_q9.c"
+#include "mesh_xy_q16.c"
 
-int mesh_xy ( char *type, int nelemx, int nelemy, int node_num, double xmin, double xmax, double ymin, double ymax, double **node_xy)
+int mesh_xy(char *type, int nelemx, int nelemy, int node_num, double xmin, double xmax, double ymin, double ymax, double **node_xy)
 
 /******************************************************************************/
 /*
@@ -28,37 +28,36 @@ int mesh_xy ( char *type, int nelemx, int nelemy, int node_num, double xmin, dou
 {
   int *element_node;
 
-  if ( strcmp(type,"T3") == 0 )
+  if (strcmp(type, "T3") == 0)
   {
-    mesh_xy_t3 ( nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+    mesh_xy_t3(nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
   }
-  else if ( strcmp(type,"T6") == 0 )
+  else if (strcmp(type, "T6") == 0)
   {
-    mesh_xy_t6 ( nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+    mesh_xy_t6(nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
   }
-  else if ( strcmp(type,"T10") == 0 )
+  else if (strcmp(type, "T10") == 0)
   {
-    mesh_xy_t10 ( nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+    mesh_xy_t10(nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
   }
-  else if ( strcmp(type,"Q4") == 0 )
+  else if (strcmp(type, "Q4") == 0)
   {
-    mesh_xy_q4 ( nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+    mesh_xy_q4(nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
   }
-  else if ( strcmp(type,"Q9") == 0 )
+  else if (strcmp(type, "Q9") == 0)
   {
-    mesh_xy_q9 ( nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+    mesh_xy_q9(nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
   }
-  else if ( strcmp(type,"Q16") == 0 )
+  else if (strcmp(type, "Q16") == 0)
   {
-    mesh_xy_q16 ( nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+    mesh_xy_q16(nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
   }
   else
   {
     node_xy = NULL;
-    fprintf ( stderr, "\n" );
-    fprintf ( stderr, "MESH_XY - Fatal error!\n" );
-    fprintf ( stderr, "  Illegal value of type = \"%s\".\n", type );
-    exit ( 1 );
+    fprintf(stderr, "\n");
+    fprintf(stderr, "MESH_XY - Fatal error!\n");
+    fprintf(stderr, "  Illegal value of type = \"%s\".\n", type);
+    exit(1);
   }
-
 }

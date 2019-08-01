@@ -1,5 +1,5 @@
 
-void elastic_model( int node_num, int element_num, int element_order,  int *element_node, double **node_xy, double *rho, double **c)
+void elastic_model(int node_num, int element_num, int element_order, int *element_node, double **node_xy, double *rho, double **c)
 /******************************************************************************/
 /*
   Purpose:
@@ -12,50 +12,48 @@ void elastic_model( int node_num, int element_num, int element_order,  int *elem
 */
 
 {
-  
-   int p, order, element;
-   double x, y;
-   double RHO, vp, vs, lamda, miu;
-  
-   for( element = 0; element < element_num * element_order; element = element + element_order )
-   {
-        
-	for(order = 0; order < element_order; order ++)
-	{
-	    // p is the current node and set rho, vp, vs according to its coordinates(x,y). 
-	    
-	    p = element_node[ order + element ] - 1;  // convert to 0-based index
-	    x = node_xy[0][p];
-	    y = node_xy[1][p];
-	    
-	    if( x >= 0 && y>= 5)  //  set model condition
-	    {
-		RHO = 2200;
-		vp  = 2200;
-		vs  = 1154.7;
-		miu    = vs * vs * RHO;
-		lamda  = vp * vp * RHO -2 * miu;
-		rho[p] = RHO;
-		c[0][p] = lamda + 2 * miu;
-		c[1][p] = lamda;
-		c[2][p] = lamda + 2 * miu;
-		c[3][p] = miu;
-	    }
-	    else 
-	    {
-		RHO = 2200;
-		vp  = 3000;
-		vs  = 1732.1;
-		miu    = vs * vs * RHO;
-		lamda  = vp * vp * RHO -2 * miu;
-		rho[p] = RHO;
-		c[0][p] = lamda + 2 * miu;
-		c[1][p] = lamda;
-		c[2][p] = lamda + 2 * miu;
-		c[3][p] = miu;
-	    }	  
-	}
-	
-   }
 
+	int p, order, element;
+	double x, y;
+	double RHO, vp, vs, lamda, miu;
+
+	for (element = 0; element < element_num * element_order; element = element + element_order)
+	{
+
+		for (order = 0; order < element_order; order++)
+		{
+			// p is the current node and set rho, vp, vs according to its coordinates(x,y).
+
+			p = element_node[order + element] - 1; // convert to 0-based index
+			x = node_xy[0][p];
+			y = node_xy[1][p];
+
+			if (x >= 0 && y >= 5) //  set model condition
+			{
+				RHO = 2200;
+				vp = 2200;
+				vs = 1154.7;
+				miu = vs * vs * RHO;
+				lamda = vp * vp * RHO - 2 * miu;
+				rho[p] = RHO;
+				c[0][p] = lamda + 2 * miu;
+				c[1][p] = lamda;
+				c[2][p] = lamda + 2 * miu;
+				c[3][p] = miu;
+			}
+			else
+			{
+				RHO = 2200;
+				vp = 3000;
+				vs = 1732.1;
+				miu = vs * vs * RHO;
+				lamda = vp * vp * RHO - 2 * miu;
+				rho[p] = RHO;
+				c[0][p] = lamda + 2 * miu;
+				c[1][p] = lamda;
+				c[2][p] = lamda + 2 * miu;
+				c[3][p] = miu;
+			}
+		}
+	}
 }
