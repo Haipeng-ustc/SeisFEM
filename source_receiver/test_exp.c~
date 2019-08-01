@@ -1,0 +1,17 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int main()
+{
+
+	double a;
+	a = 1.0;
+	exp_function(a);
+
+
+	return 0;
+
+
+
+}

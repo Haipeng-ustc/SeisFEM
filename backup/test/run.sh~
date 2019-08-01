@@ -1,0 +1,6 @@
+#!/bin/bash
+
+gfortran -c coo2csr_lib.f90
+gcc -c test_all.c
+gcc -o main.o test_all.o coo2csr_lib.o -lgfortran
+./main.o
