@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include <string.h>
 #include "../mesh/element_type.c"
 #include "../mesh/mesh_node_num.c"
@@ -17,8 +18,9 @@
 #include "../coo2csr/csr_matvec.c"
 #include "../source_receiver/node_location.c"
 #include "../source_receiver/seismic_source.c"
-
 #include "../wave/acoustic.c"
+#include "timestamp.c"
+
 int main()
 /******************************************************************************/
 /*
@@ -134,6 +136,8 @@ int main()
   /***************************************
             prepare parameters
   ****************************************/
+  timestamp ( );
+
   xmin = 0.0;
   ymin = 0.0;
   xmax = edge_size * nelemx;
@@ -230,12 +234,12 @@ int main()
   absorbing_boundary_mpml(node_num, element_num, element_order, element_node, node_xy, pml_nx, pml_ny, edge_size, xmin, xmax, ymin, ymax, vp_max,
                           use_pml_xmin, use_pml_xmax, use_pml_ymin, use_pml_ymax, mpml_dx, mpml_dy, mpml_dxx, mpml_dyy, mpml_dxx_pyx, mpml_dyy_pxy);
   // get lump mass matrix
-  mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, rho, mass_coo_i, mass_coo_j, mass_coo_x, 1);
+  mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, mass_coo_i, mass_coo_j, mass_coo_x, 1);
   for (i = 0; i < node_num; i++)
     mass_lump[i] = mass_coo_x[i];
   // get mass and stif matrices in coo format
-  mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, rho, mass_coo_i, mass_coo_j, mass_coo_x, 0);
-  stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, vp, stif_coo_i, stif_coo_j, stif_coo_x);
+  mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, mass_coo_i, mass_coo_j, mass_coo_x, 0);
+  stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif_coo_i, stif_coo_j, stif_coo_x);
   // call fortran subroutines to convert coo to csr. Attention: mi, mj, mass, Mp_temp, Mj_temp, Mass_temp arethe address,
   // do not need use & to get the address of the pointers.
   __coo2csr_lib_MOD_coo2csr_canonical(&nnz, &csr_p_size, &mass_csr_size, mass_coo_i, mass_coo_j, mass_coo_x, mass_csr_p, mass_csr_j_temp, mass_csr_x_temp);
@@ -304,6 +308,6 @@ int main()
   fclose(fp_node_xy);
   printf("\n Free all dynamic arrays!\n");
   printf("\n Normal End!\n");
-
+  timestamp ( );
   return 0;
 }

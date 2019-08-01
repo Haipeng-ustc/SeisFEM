@@ -5,7 +5,7 @@
 #include "stiffness_sparse_q9.c"
 #include "stiffness_sparse_q16.c"
 
-void stif_sparse_all(char *type, int node_num, int element_num, int element_order, int *element_node, double **node_xy, double *vp, int *stiffi, int *stiffj, double *stiffness)
+void stif_sparse_all(char *type, int node_num, int element_num, int element_order, int *element_node, double **node_xy, int *stiffi, int *stiffj, double *stiffness)
 
 /******************************************************************************/
 /*
@@ -29,27 +29,27 @@ void stif_sparse_all(char *type, int node_num, int element_num, int element_orde
 
   if (strcmp(type, "T3") == 0)
   {
-    stiffness_sparse_t3(node_num, element_num, element_order, element_node, node_xy, vp, stiffi, stiffj, stiffness);
+    stiffness_sparse_t3(node_num, element_num, element_order, element_node, node_xy, stiffi, stiffj, stiffness);
   }
   else if (strcmp(type, "T6") == 0)
   {
-    stiffness_sparse_t6(node_num, element_num, element_order, element_node, node_xy, vp, stiffi, stiffj, stiffness);
+    stiffness_sparse_t6(node_num, element_num, element_order, element_node, node_xy, stiffi, stiffj, stiffness);
   }
   else if (strcmp(type, "T10") == 0)
   {
-    stiffness_sparse_t10(node_num, element_num, element_order, element_node, node_xy, vp, stiffi, stiffj, stiffness);
+    stiffness_sparse_t10(node_num, element_num, element_order, element_node, node_xy, stiffi, stiffj, stiffness);
   }
   else if (strcmp(type, "Q4") == 0)
   {
-    stiffness_sparse_q4(node_num, element_num, element_order, element_node, node_xy, vp, stiffi, stiffj, stiffness);
+    stiffness_sparse_q4(node_num, element_num, element_order, element_node, node_xy, stiffi, stiffj, stiffness);
   }
   else if (strcmp(type, "Q9") == 0)
   {
-    stiffness_sparse_q9(node_num, element_num, element_order, element_node, node_xy, vp, stiffi, stiffj, stiffness);
+    stiffness_sparse_q9(node_num, element_num, element_order, element_node, node_xy, stiffi, stiffj, stiffness);
   }
   else if (strcmp(type, "Q16") == 0)
   {
-    stiffness_sparse_q16(node_num, element_num, element_order, element_node, node_xy, vp, stiffi, stiffj, stiffness);
+    stiffness_sparse_q16(node_num, element_num, element_order, element_node, node_xy, stiffi, stiffj, stiffness);
   }
   else
   {

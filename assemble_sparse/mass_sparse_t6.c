@@ -161,11 +161,11 @@ void mass_sparse_t6(int node_num, int element_num, int element_order, int *eleme
                     jp = element_node[jq + element] - 1; // c array from 0
                     if (lumpflag == 1)
                     {
-                        mass_sum = mass_sum + *area * weight[quad] * phi[iq] * phi[jq];
+                        mass_sum = mass_sum + area * weight[quad] * phi[iq] * phi[jq];
                         if (ip == jp)
                         {
-                            diag_sum = diag_sum + *area * weight[quad] * phi[iq] * phi[jq];
-                            mass[ip] = mass[ip] + *area * weight[quad] * phi[iq] * phi[jq];
+                            diag_sum = diag_sum + area * weight[quad] * phi[iq] * phi[jq];
+                            mass[ip] = mass[ip] + area * weight[quad] * phi[iq] * phi[jq];
                         }
                     }
                     else

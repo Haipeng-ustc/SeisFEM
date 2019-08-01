@@ -1,5 +1,5 @@
 
-void stiffness_sparse_q16(int node_num, int element_num, int element_order, int *element_node, double **node_xy, double *vp, int *stiffi, int *stiffj, double *stiffness)
+void stiffness_sparse_q16(int node_num, int element_num, int element_order, int *element_node, double **node_xy, int *stiffi, int *stiffj, double *stiffness)
 
 /* stiffness_sparse_q16 computes the stiffness matrix, store the matrix in the coo format (i,j,value), using 16-node rectangular, 36 ponits quadrature rule.
 
@@ -270,7 +270,7 @@ void stiffness_sparse_q16(int node_num, int element_num, int element_order, int 
           coo_index = element * element_order + iq * element_order + jq;
           stiffi[coo_index] = ip;
           stiffj[coo_index] = jp;
-          stiffness[coo_index] = stiffness[coo_index] + area * vp[ip] * weight[quad] * (dphidx[iq] * dphidx[jq] + dphidy[iq] * dphidy[jq]);
+          stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (dphidx[iq] * dphidx[jq] + dphidy[iq] * dphidy[jq]);
         }
       }
     }
