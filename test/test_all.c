@@ -9,25 +9,27 @@
 #include "../mesh/mesh_element_num.c"
 #include "../mesh/mesh_element_order.c"
 #include "../mesh/mesh_xy.c"
-#include "../assemble_sparse/mass_sparse_all.c"
-#include "../assemble_sparse/stif_sparse_all.c"
+#include "../assemble/mass_sparse_all.c"
+#include "../assemble/stif_sparse_all.c"
 #include "../model/acoustic_model.c"
 #include "../model/elastic_model.c"
 #include "../absorbing_boundary/absorbing_boundary_pml.c"
 #include "../absorbing_boundary/absorbing_boundary_mpml.c"
-#include "../coo2csr/csr_matvec.c"
+#include "../sparse_matrix/csr_matvec.c"
 #include "../source_receiver/node_location.c"
 #include "../source_receiver/seismic_source.c"
 #include "../wave/acoustic.c"
+#include "../solver/solver_type.c"
+
 #include "timestamp.c"
 
 int main()
 /******************************************************************************/
 /*
- *       MESH_TEST tests the all subroutines.
+ *       TEST_ALL tests the all subroutines.
  *
-  List:
-
+ 
+    ELEMENT_TYPE List:
     I  ELEMENT_TYPE   Definition
     -  ------------   ----------
     1  T3             3 node linear triangle;
@@ -36,7 +38,14 @@ int main()
     4  Q4             4 node linear Lagrange/serendipity quadrilateral;
     5  Q9             9 node quadratic Lagrange quadrilateral;
     6  Q16            16 node cubic Lagrange quadrilateral;
-
+ 
+    SOLVER_TYPE List:
+    I  SOLVER_TYPE   Definition
+    -  ------------   ----------
+    1  mgmres         Generalized Minimum Residual (GMRES) algorithm,
+                      using compressed row sparse matrix format
+    2  superlu        LU decomposition to solver linear system;
+    3  masslump       masslump.
 */
 {
 
@@ -45,10 +54,12 @@ int main()
   ****************************************/
   int element, order, i, j;
   char *type;
+  char *solver;
   int type_code = 1;
-  int nelemx = 100;
-  int nelemy = 100;
-  int edge_size = 10;
+  int solver_code = 3;
+  int nelemx = 200;
+  int nelemy = 200;
+  int edge_size = 5;
   int node_num = 0;
   int element_num = 0;
   int element_order = 0;
@@ -260,10 +271,12 @@ int main()
     stif_csr_j[i] = stif_csr_j_temp[i];
     stif_csr_x[i] = stif_csr_x_temp[i];
   }
+  solver = solver_type(solver_code);
+  printf("\n solver is     %s\n", solver);
 
   source_node = node_location(node_num, edge_size, node_xy, source_x, source_y);
   printf("\n Source node is %d\n", source_node);
-  acoustic(node_num, step, dt, f0, t0, source_node, mass_lump, mass_csr_p, mass_csr_j, mass_csr_x, stif_csr_p, stif_csr_j, stif_csr_x);
+  acoustic(node_num, step, dt, f0, t0, source_node, rho, vp, mass_lump, mass_csr_size, mass_csr_p, mass_csr_j, mass_csr_x, stif_csr_p, stif_csr_j, stif_csr_x, solver);
 
   /***************************************
               free memory

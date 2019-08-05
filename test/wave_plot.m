@@ -13,4 +13,5 @@ for time = 1 : 1 : 20
     caxis([-1e-5 1e-5]);
     hold off
     drawnow
+    pause(0.2)
 end
