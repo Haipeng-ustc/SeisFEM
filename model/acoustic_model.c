@@ -32,7 +32,7 @@ void acoustic_model(int node_num, int element_num, int element_order, int *eleme
 			if (x >= 0 && y >= 0) //  set model condition
 			{
 				rho[p] = 2200;
-				vp[p] = 200;
+				vp[p] = 2000;
 			}
 			else
 			{
