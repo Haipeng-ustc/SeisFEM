@@ -1,4 +1,4 @@
-double mesh_xy_t3 ( int nx, int ny, int node_num, double xmin, double xmax, double ymin, double ymax, double **node_xy)
+double mesh_xy_t3(int nx, int ny, int node_num, double xmin, double xmax, double ymin, double ymax, double **node_xy)
 
 /******************************************************************************/
 /*
@@ -38,14 +38,12 @@ double mesh_xy_t3 ( int nx, int ny, int node_num, double xmin, double xmax, doub
   int i;
   int j;
 
-for(j=0; j<ny+1;j++)
-{
-    for(i=0; i<nx+1;i++)
+  for (j = 0; j < ny + 1; j++)
+  {
+    for (i = 0; i < nx + 1; i++)
     {
-        node_xy[0][i+(j) * (nx + 1)] = ((nx - i) * xmin + (i) * xmax) / (1.0 * nx);
-        node_xy[1][i+(j) * (nx + 1)] = ((ny - j) * ymin + (j) * ymax) / (1.0 * ny);
+      node_xy[0][i + (j) * (nx + 1)] = ((nx - i) * xmin + (i)*xmax) / (1.0 * nx);
+      node_xy[1][i + (j) * (nx + 1)] = ((ny - j) * ymin + (j)*ymax) / (1.0 * ny);
     }
+  }
 }
-
-}
-

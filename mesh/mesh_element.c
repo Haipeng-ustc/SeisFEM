@@ -5,7 +5,7 @@
 #include "mesh_element_q9.c"
 #include "mesh_element_q16.c"
 
-int *mesh_element(char *type, int nelemx, int nelemy)
+int mesh_element(char *type, int nelemx, int nelemy, int *element_node)
 
 /******************************************************************************/
 /*
@@ -26,31 +26,30 @@ int *mesh_element(char *type, int nelemx, int nelemy)
 
 */
 {
-  int *element_node;
 
   if (strcmp(type, "T3") == 0)
   {
-    element_node = mesh_t3_element(nelemx, nelemy);
+     mesh_t3_element(nelemx, nelemy, element_node);
   }
   else if (strcmp(type, "T6") == 0)
   {
-    element_node = mesh_t6_element(nelemx, nelemy);
+     mesh_t6_element(nelemx, nelemy, element_node);
   }
   else if (strcmp(type, "T10") == 0)
   {
-    element_node = mesh_t10_element(nelemx, nelemy);
+     mesh_t10_element(nelemx, nelemy, element_node);
   }
   else if (strcmp(type, "Q4") == 0)
   {
-    element_node = mesh_q4_element(nelemx, nelemy);
+     mesh_q4_element(nelemx, nelemy, element_node);
   }
   else if (strcmp(type, "Q9") == 0)
   {
-    element_node = mesh_q9_element(nelemx, nelemy);
+     mesh_q9_element(nelemx, nelemy, element_node);
   }
   else if (strcmp(type, "Q16") == 0)
   {
-    element_node = mesh_q16_element(nelemx, nelemy);
+     mesh_q16_element(nelemx, nelemy, element_node);
   }
   else
   {
@@ -60,6 +59,4 @@ int *mesh_element(char *type, int nelemx, int nelemy)
     fprintf(stderr, "  Illegal value of type = \"%s\".\n", type);
     exit(1);
   }
-
-  return element_node;
 }

@@ -1,5 +1,5 @@
 
-int *mesh_t10_element(int nelemx, int nelemy)
+int mesh_t10_element(int nelemx, int nelemy, int *element_node)
 
 /******************************************************************************/
 /*
@@ -51,12 +51,9 @@ int *mesh_t10_element(int nelemx, int nelemy)
 {
   int base;
   int element;
-  int *element_node;
   int element_order = 10;
   int i;
   int j;
-
-  element_node = (int *)malloc(element_order * 2 * nelemx * nelemy * sizeof(int));
 
   element = 0;
 
@@ -92,5 +89,4 @@ int *mesh_t10_element(int nelemx, int nelemy)
     }
   }
 
-  return element_node;
 }

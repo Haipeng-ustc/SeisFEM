@@ -1,5 +1,5 @@
 
-int *mesh_q16_element(int nelemx, int nelemy)
+int mesh_q16_element(int nelemx, int nelemy, int *element_node)
 
 /******************************************************************************/
 /*
@@ -48,12 +48,9 @@ int *mesh_q16_element(int nelemx, int nelemy)
 {
   int base;
   int element;
-  int *element_node;
   int element_order = 16;
   int i;
   int j;
-
-  element_node = (int *)malloc(element_order * nelemx * nelemy * sizeof(int));
 
   element = 0;
 
@@ -84,5 +81,4 @@ int *mesh_q16_element(int nelemx, int nelemy)
     }
   }
 
-  return element_node;
 }

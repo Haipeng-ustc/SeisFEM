@@ -1,5 +1,5 @@
 
-int *mesh_t6_element ( int nelemx, int nelemy )
+int mesh_t6_element ( int nelemx, int nelemy, int *element_node )
 
 /******************************************************************************/
 /*
@@ -64,7 +64,6 @@ int *mesh_t6_element ( int nelemx, int nelemy )
   int c;
   int e;
   int element;
-  int *element_node;
   int element_order = 6;
   int i;
   int j;
@@ -76,7 +75,7 @@ int *mesh_t6_element ( int nelemx, int nelemy )
   int sw;
   int w;
 
-  element_node = ( int * ) malloc ( element_order*2*nelemx*nelemy * sizeof ( int ) );
+ 
 /*
   Node labeling:
 
@@ -97,30 +96,29 @@ int *mesh_t6_element ( int nelemx, int nelemy )
       nw = sw +         2 * ( 2 * nelemx + 1 );
 
       s  = sw + 1;
-      c  = sw + 1 +               2 * nelemx + 1;
-      n  = sw + 1 +         2 * ( 2 * nelemx + 1 );
+      c  = sw + 1 +           2 * nelemx + 1;
+      n  = sw + 1 +     2 * ( 2 * nelemx + 1 );
 
       se = sw + 2;
-      e  = sw + 2 +               2 * nelemx + 1;
-      ne = sw + 2 +         2 * ( 2 * nelemx + 1 );
+      e  = sw + 2 +           2 * nelemx + 1;
+      ne = sw + 2 +     2 * ( 2 * nelemx + 1 );
 
-      element_node[0+element*element_order] = sw;
-      element_node[1+element*element_order] = se;
-      element_node[2+element*element_order] = nw;
-      element_node[3+element*element_order] = s;
-      element_node[4+element*element_order] = c;
-      element_node[5+element*element_order] = w;
+      element_node[0 + element * element_order] = sw;
+      element_node[1 + element * element_order] = se;
+      element_node[2 + element * element_order] = nw;
+      element_node[3 + element * element_order] = s;
+      element_node[4 + element * element_order] = c;
+      element_node[5 + element * element_order] = w;
       element = element + 1;
 
-      element_node[0+element*element_order] = ne;
-      element_node[1+element*element_order] = nw;
-      element_node[2+element*element_order] = se;
-      element_node[3+element*element_order] = n;
-      element_node[4+element*element_order] = c;
-      element_node[5+element*element_order] = e;
+      element_node[0 + element * element_order] = ne;
+      element_node[1 + element * element_order] = nw;
+      element_node[2 + element * element_order] = se;
+      element_node[3 + element * element_order] = n;
+      element_node[4 + element * element_order] = c;
+      element_node[5 + element * element_order] = e;
       element = element + 1;
     }
   }
 
-  return element_node;
 }

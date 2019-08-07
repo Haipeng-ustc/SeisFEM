@@ -1,5 +1,5 @@
 
-int *mesh_q4_element ( int nelemx, int nelemy )
+int mesh_q4_element ( int nelemx, int nelemy, int *element_node )
 
 /******************************************************************************/
 /*
@@ -55,7 +55,6 @@ int *mesh_q4_element ( int nelemx, int nelemy )
 */
 {
   int element;
-  int *element_node;
   int element_order = 4;
   int i;
   int j;
@@ -64,7 +63,7 @@ int *mesh_q4_element ( int nelemx, int nelemy )
   int se;
   int sw;
 
-  element_node = ( int * ) malloc ( element_order*nelemx*nelemy * sizeof ( int ) );
+  
 /*
   Node labeling:
 
@@ -92,5 +91,4 @@ int *mesh_q4_element ( int nelemx, int nelemy )
     }
   }
 
-  return element_node;
 }

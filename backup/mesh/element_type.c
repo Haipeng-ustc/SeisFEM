@@ -1,5 +1,5 @@
 
-char *element_type ( int i )
+char *element_type(int i)
 
 /******************************************************************************/
 /*
@@ -22,40 +22,40 @@ char *element_type ( int i )
 {
   char *value;
 
-  if ( i == 1 )
+  if (i == 1)
   {
-    value = ( char * ) malloc ( 3 * sizeof ( char ) );
-    strcpy ( value, "T3" );
+    value = (char *)malloc(3 * sizeof(char));
+    strcpy(value, "T3");
   }
-  else if ( i == 2 )
+  else if (i == 2)
   {
-    value = ( char * ) malloc ( 3 * sizeof ( char ) );
-    strcpy ( value, "T6" );
+    value = (char *)malloc(3 * sizeof(char));
+    strcpy(value, "T6");
   }
-  else if ( i == 3 )
+  else if (i == 3)
   {
-    value = ( char * ) malloc ( 4 * sizeof ( char ) );
-    strcpy ( value, "T10" );
+    value = (char *)malloc(4 * sizeof(char));
+    strcpy(value, "T10");
   }
-  else if ( i == 4 )
+  else if (i == 4)
   {
-    value = ( char * ) malloc ( 3 * sizeof ( char ) );
-    strcpy ( value, "Q4" );
+    value = (char *)malloc(3 * sizeof(char));
+    strcpy(value, "Q4");
   }
-  else if ( i == 5 )
+  else if (i == 5)
   {
-    value = ( char * ) malloc ( 3 * sizeof ( char ) );
-    strcpy ( value, "Q9" );
+    value = (char *)malloc(3 * sizeof(char));
+    strcpy(value, "Q9");
   }
-  else if ( i == 6 )
+  else if (i == 6)
   {
-    value = ( char * ) malloc ( 4 * sizeof ( char ) );
-    strcpy ( value, "Q16" );
+    value = (char *)malloc(4 * sizeof(char));
+    strcpy(value, "Q16");
   }
   else
   {
-    value = ( char * ) malloc ( 4 * sizeof ( char ) );
-    strcpy ( value, "???" );
+    value = (char *)malloc(4 * sizeof(char));
+    strcpy(value, "???");
     printf("ELEMENT_TYPE - Fatal error!\n");
     exit(1);
   }

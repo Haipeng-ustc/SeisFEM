@@ -1,5 +1,5 @@
 
-int *mesh_t6_element ( int nelemx, int nelemy )
+int mesh_t6_element ( int nelemx, int nelemy, int *element_node )
 
 /******************************************************************************/
 /*
@@ -64,7 +64,6 @@ int *mesh_t6_element ( int nelemx, int nelemy )
   int c;
   int e;
   int element;
-  int *element_node;
   int element_order = 6;
   int i;
   int j;
@@ -76,7 +75,7 @@ int *mesh_t6_element ( int nelemx, int nelemy )
   int sw;
   int w;
 
-  element_node = ( int * ) malloc ( element_order*2*nelemx*nelemy * sizeof ( int ) );
+ 
 /*
   Node labeling:
 
@@ -122,5 +121,4 @@ int *mesh_t6_element ( int nelemx, int nelemy )
     }
   }
 
-  return element_node;
 }
