@@ -25,11 +25,13 @@ void stiffness_sparse_q16(int node_num, int element_num, int element_order, int 
  
  I      Stiffness_TYPE
  -  --------------------------------------
- 1  dphi_dx * dphi_dx + dphi_dy * dphi_dy
- 2  dphi_dx * dphi_dx
- 3  dphi_dy * dphi_dy
- 4  phi     * dphi_dx
- 5  phi     * dphi_dy
+ 0  dphi_dx * dphi_dx + dphi_dy * dphi_dy
+ 1  dphi_dx * dphi_dx
+ 2  dphi_dy * dphi_dy
+ 3  dphi_dx * dphi_dy
+ 4  dphi_dy * dphi_dx
+ 5  phi     * dphi_dx
+ 6  phi     * dphi_dy
 
 */
 {
@@ -280,21 +282,25 @@ void stiffness_sparse_q16(int node_num, int element_num, int element_order, int 
           coo_index = element * element_order + iq * element_order + jq;
           stiffi[coo_index] = ip;
           stiffj[coo_index] = jp;
-            if( stif_type == 1 )
+            if( stif_type == 0 )
                 stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (dphidx[iq] * dphidx[jq] + dphidy[iq] * dphidy[jq]);
-            else if(stif_type == 2)
+            else if(stif_type == 1)
                 stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (dphidx[iq] * dphidx[jq]                          );
-            else if(stif_type == 3)
+            else if(stif_type == 2)
                 stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (                        + dphidy[iq] * dphidy[jq]);
+            else if(stif_type == 3)
+                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (dphidx[iq] * dphidy[iq]                          );
             else if(stif_type == 4)
-                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (   phi[iq] * dphidx[jq]                          );
+                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (                        + dphidy[iq] * dphidx[iq]  );
             else if(stif_type == 5)
+                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (   phi[iq] * dphidx[jq]                          );
+            else if(stif_type == 6)
                 stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (                        + phi[iq] * dphidy[jq]   );
             else
             {
                 stiffness[coo_index] = 0.0;
                 fprintf(stderr, "\n");
-                fprintf(stderr, "STIFFNESS_SPARSE_T6 - Fatal error!\n");
+                fprintf(stderr, "STIFFNESS_SPARSE_Q4 - Fatal error!\n");
                 fprintf(stderr, "  Illegal value of stif type = \"%s\".\n", stif_type);
                 exit(1);
             }

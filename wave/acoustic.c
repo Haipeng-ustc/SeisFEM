@@ -92,7 +92,7 @@ void acoustic(char *type, int node_num, int element_num, int element_order, int 
     for (i = 0; i < node_num; i++)  mass_lump[i] = mass_coo_x[i];
     // get mass and stif matrices in coo format
     mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, mass_coo_i, mass_coo_j, mass_coo_x, 0);
-    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif_coo_i, stif_coo_j, stif_coo_x, 1);
+    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif_coo_i, stif_coo_j, stif_coo_x, 0);
     // call fortran subroutines to convert coo to csr. Attention: mi, mj, mass, Mp_temp, Mj_temp, Mass_temp are addresses,
     // do not need use & to get the address of the pointers.
     __coo2csr_lib_MOD_coo2csr_canonical(&nnz, &csr_p_size, &mass_csr_size, mass_coo_i, mass_coo_j, mass_coo_x, mass_csr_p, mass_csr_j_temp, mass_csr_x_temp);

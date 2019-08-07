@@ -56,9 +56,9 @@ int main()
   char *type;
   char *solver;
   int type_code = 4;
-  int solver_code = 3;
-  int nelemx = 200;
-  int nelemy = 200;
+  int solver_code = 1;
+  int nelemx = 100;
+  int nelemy = 100;
   int edge_size = 10;
   int pml_nx = 10;
   int pml_ny = 10;

@@ -1,10 +1,10 @@
 
-void elastic_model(int node_num, int element_num, int element_order, int *element_node, double **node_xy, double *rho, double **c)
+void elastic_model(int node_num, int element_num, int element_order, int *element_node, double **node_xy, double *rho, double *vp, double *vs, double **c)
 /******************************************************************************/
 /*
   Purpose:
 
-   elastic_model is used to set the model and gives rho[node_num], c[4][node_num]: c11, c13, c33, c44. 
+   elastic_model is used to set the model and gives rho[node_num], vp[node_num], vs[node_num], c[4][node_num]: c11, c13, c33, c44. 
    
    attention: the rho, c11, c12, c33 and c44 can aslo be set in the assblebing process by giving their values according their x_val and y_val location,
    which allows to set diffreent values even in the same element.  Because their valu, es can be defined on the qudrature rule points instead of the element control points.
@@ -15,7 +15,7 @@ void elastic_model(int node_num, int element_num, int element_order, int *elemen
 
 	int p, order, element;
 	double x, y;
-	double RHO, vp, vs, lamda, miu;
+	double RHO, VP, VS, lamda, miu;
 
 	for (element = 0; element < element_num * element_order; element = element + element_order)
 	{
@@ -33,9 +33,11 @@ void elastic_model(int node_num, int element_num, int element_order, int *elemen
 				RHO = 2200;
 				vp = 2200;
 				vs = 1154.7;
-				miu = vs * vs * RHO;
-				lamda = vp * vp * RHO - 2 * miu;
+				miu = VS * VS * RHO;
+				lamda = VP * VP * RHO - 2 * miu;
 				rho[p] = RHO;
+                vp[p] = VP;
+                vs[p] = VS;
 				c[0][p] = lamda + 2 * miu;
 				c[1][p] = lamda;
 				c[2][p] = lamda + 2 * miu;
@@ -46,13 +48,15 @@ void elastic_model(int node_num, int element_num, int element_order, int *elemen
 				RHO = 2200;
 				vp = 3000;
 				vs = 1732.1;
-				miu = vs * vs * RHO;
-				lamda = vp * vp * RHO - 2 * miu;
-				rho[p] = RHO;
-				c[0][p] = lamda + 2 * miu;
-				c[1][p] = lamda;
-				c[2][p] = lamda + 2 * miu;
-				c[3][p] = miu;
+                miu = VS * VS * RHO;
+                lamda = VP * VP * RHO - 2 * miu;
+                rho[p] = RHO;
+                vp[p] = VP;
+                vs[p] = VS;
+                c[0][p] = lamda + 2 * miu;
+                c[1][p] = lamda;
+                c[2][p] = lamda + 2 * miu;
+                c[3][p] = miu;
 			}
 		}
 	}

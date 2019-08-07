@@ -184,10 +184,10 @@ void acoustic_pml(char *type, int node_num, int element_num, int element_order, 
     for (i = 0; i < node_num; i++)  mass_lump[i] = mass_coo_x[i];
     // get mass and stif matrices in coo format
     mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy,  mass_coo_i,  mass_coo_j,  mass_coo_x, 0);
-    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif1_coo_i, stif1_coo_j, stif1_coo_x, 2); // dphidx * dphidx
-    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif2_coo_i, stif2_coo_j, stif2_coo_x, 4); //    phi * dphidx
-    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif3_coo_i, stif3_coo_j, stif3_coo_x, 3); // dphidy * dphidy
-    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif4_coo_i, stif4_coo_j, stif4_coo_x, 5); //    phi * dphidy
+    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif1_coo_i, stif1_coo_j, stif1_coo_x, 1); // dphidx * dphidx
+    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif2_coo_i, stif2_coo_j, stif2_coo_x, 5); //    phi * dphidx
+    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif3_coo_i, stif3_coo_j, stif3_coo_x, 2); // dphidy * dphidy
+    stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif4_coo_i, stif4_coo_j, stif4_coo_x, 6); //    phi * dphidy
 
     // call fortran subroutines to convert coo to csr. Attention: mi, mj, mass, Mp_temp, Mj_temp, Mass_temp are addresses,
     // do not need use & to get the address of the pointers.
