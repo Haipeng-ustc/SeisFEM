@@ -85,19 +85,12 @@ void mass_sparse_t3(int node_num, int element_num, int element_order, int *eleme
     weight[11] = ww;
 
     coo_index = 0; // for coo format sparse matrix index
-    if (lumpflag == 1)
+
+    for (i = 0; i < element_num * element_order * element_order; i++)
     {
-        for (i = 0; i < node_num; i++)
-            mass[i] = 0.0;
-    }
-    else
-    {
-        for (i = 0; i < element_num * element_order * element_order; i++)
-        {
-            mi[i] = 0;
-            mj[i] = 0;
-            mass[i] = 0.0;
-        }
+        mi[i] = 0;
+        mj[i] = 0;
+        mass[i] = 0.0;
     }
 
     for (element = 0; element < element_num * element_order; element = element + element_order)
@@ -159,7 +152,7 @@ void mass_sparse_t3(int node_num, int element_num, int element_order, int *eleme
                         if (ip == jp)
                         {
                             diag_sum = diag_sum + area * weight[quad] * rho[ip] * phi[iq] * phi[jq];
-                            mass[ip] = mass[ip] + area * weight[quad] * rho[ip] * phi[iq] * phi[jq];
+                            mass[ip] = mass[ip] + area * weight[quad] * rho[ip] * phi[iq] * phi[jq]; 
                         }
                     }
                     else

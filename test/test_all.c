@@ -58,8 +58,8 @@ int main()
   char *solver;
   int type_code = 1;
   int solver_code = 3;
-  int nelemx = 20;
-  int nelemy = 20;
+  int nelemx = 400;
+  int nelemy = 400;
   int edge_size = 10;
   int pml_nx = 10;
   int pml_ny = 10;
@@ -104,11 +104,11 @@ int main()
   xmax = edge_size * nelemx;
   ymax = edge_size * nelemy;
   source_x = xmax / 2.0;
-  source_y = ymax / 2.0;
-  f0 = 20;
+  source_y = ymax / 4.0;
+  f0 = 10;
   t0 = 1.2 / f0;
   dt = 0.0005;
-  step = 400;
+  step = 2000;
 
   /***************************************
     select the element type and mesh model

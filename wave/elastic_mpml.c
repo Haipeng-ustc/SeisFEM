@@ -213,10 +213,6 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
     absorbing_boundary_mpml(node_num, element_num, element_order, element_node, node_xy, pml_nx, pml_ny, edge_size, xmin, xmax, ymin, ymax, vp_max,
                             use_mpml_xmin, use_mpml_xmax, use_mpml_ymin, use_mpml_ymax, mpml_dx, mpml_dy, mpml_dxx, mpml_dyy, mpml_dxx_pyx, mpml_dyy_pxy);
 
-    mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, rho, mass_coo_i, mass_coo_j, mass_coo_x, 1);
-    for (i = 0; i < node_num; i++)
-        mass_lump[i] = mass_coo_x[i];
-
     fp_u = fopen("u.dat", "w");
     fp_w = fopen("w.dat", "w");
     fp_Energy_u = fopen("Energy_u.dat", "w");
@@ -229,6 +225,10 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         fortran subroutines to convert coo to csr. 
         do not need use & to get the address of the pointers.
      *********************************************************/
+    // mass lump
+    mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, rho, mass_coo_i, mass_coo_j, mass_coo_x, 1);
+    for (i = 0; i < node_num; i++)
+        mass_lump[i] = mass_coo_x[i];
     // mass
     mass_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, rho, mass_coo_i, mass_coo_j, mass_coo_x, 0);
     __coo2csr_lib_MOD_coo2csr_canonical(&nnz, &csr_p_size, &mass_csr_size, mass_coo_i, mass_coo_j, mass_coo_x, mass_csr_p, mass_csr_j_temp, mass_csr_x_temp);
@@ -299,10 +299,9 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         stif6_csr_j[i] = stif_csr_j_temp[i];
         stif6_csr_x[i] = stif_csr_x_temp[i];
     }
-
-    for (i = 0; i < csr_p_size; i++)
+    for (i = 0; i < node_num; i++)
     {
-        fprintf(fp_stif_p, "%d\n", mass_csr_p[i]);
+        fprintf(fp_stif_p, "%f\n", mass_lump[i]);
     }
     for (i = 0; i < mass_csr_size; i++)
     {
@@ -362,26 +361,7 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
     fprintf(fp_Energy_u, "%f\n%f\n", Energy_u[0], Energy_u[1]);
     fprintf(fp_Energy_w, "%f\n%f\n", Energy_w[0], Energy_w[1]);
 
-    for (i = 0; i < node_num; i++)
-    {
-        U_now[i] = 1.0 ;
-        U1t_now[i] = 2.0;
-        U1_now[i] = 3.0;
-        Lx1_now[i] = 4.0;
-        Lx2_now[i] = 5.0;
-    }
-
     fp_test = fopen("test_rhs.dat", "w");
-    csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, U_now, y1); // dphidx * dphidx * U_now
-    csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1t_now, y2);  // phi    * phi    * U1t_now
-    csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1_now, y3);   // phi    * phi    * U1_now
-    csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx1_now, y4);  // phi    * phi    * Lx1_now
-    csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, y5);  // phi    * phi    * Lx2_now
-    for (i = 0; i < node_num; i++)
-    {
-        rhs_u1[i] = -c[0][i] * y1[i] - 2.0 * rho[i] * mpml_dx[i] * y2[i] - rho[i] * mpml_dx[i] * mpml_dx[i] * y3[i] + rho[i] * y4[i] + rho[i] *  y5[i]; // + (i == source_node) * point_source * sin(Angle_force * pi / 180.0);
-        fprintf(fp_test, "%f\n", rhs_u1[i]);
-    }
 
     // begin iteration: from 0 to step-1, time = (step + 1) * dt
     printf("\nTime iteration begin:\n");
@@ -392,7 +372,7 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
             printf("\n Iteration step: %-d, time: %-f\n ", it + 1, time);
         Energy_u[it] = 0.0;
         Energy_w[it] = 0.0;
-        point_source = seismic_source(f0, t0, 1.0, time);
+        point_source = seismic_source(f0, t0, 1.0e10, time);
         for (i = 0; i < node_num; i++)
         {
             rhs_u1[i] = 0.0;
@@ -413,18 +393,9 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
 
         /********************************************************************************************************************************************
          Equation u1:
-          mass * U1tt_new = - c11 * dphidx * dphidx * U_now - 2.0 * rho * mpml_dx * phi * phi * U1t_now - rho * mpml_dx * mpml_dx * phi * phi * U1_now 
-                            + rho * phi * phi * Lx1_now + rho * phi * phi * Lx2_now + Source_x
+          mass * U1tt_new = - c11 * dphidx * dphidx * U_now - 2.0 * mpml_dx * phi * phi * U1t_now - mpml_dx * mpml_dx * phi * phi * U1_now 
+                            + phi * phi * Lx1_now + phi * phi * Lx2_now + Source_x
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-            y3[i] = 0.0;
-            y4[i] = 0.0;
-            y5[i] = 0.0;
-        }
-
         csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, U_now, y1); // dphidx * dphidx * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1t_now, y2);  // phi    * phi    * U1t_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1_now, y3);   // phi    * phi    * U1_now
@@ -432,43 +403,28 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, y5);  // phi    * phi    * Lx2_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u1[i] = -c[0][i] * y1[i] - 2.0 * rho[i] * mpml_dx[i] * y2[i] - rho[i] * mpml_dx[i] * mpml_dx[i] * y3[i] + rho[i] * y4[i] + rho[i] * y5[i] + (i == source_node) * point_source * sin(Angle_force * pi / 180.0);
+            rhs_u1[i] = -c[0][i] * y1[i] - 2.0 * mpml_dx[i] * y2[i] - mpml_dx[i] * mpml_dx[i] * y3[i] + y4[i] + y5[i] + (i == source_node) * point_source * sin(Angle_force * pi / 180.0);
         }
 
         /********************************************************************************************************************************************
          Equation u2:
-          mass * U2tt_new = - c13 * dphidx * dphidy * W_now - c44 * dphidy * dphidx * W_now - rho * mpml_dx * phi * phi * U2t_now 
-                            - rho * mpml_dy * phi * phi * U2t_now - rho * mpml_dx * mpml_dy * phi * phi * U2_now
+          mass * U2tt_new = - c13 * dphidx * dphidy * W_now - c44 * dphidy * dphidx * W_now - mpml_dx * phi * phi * U2t_now 
+                            - mpml_dy * phi * phi * U2t_now - mpml_dx * mpml_dy * phi * phi * U2_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-            y3[i] = 0.0;
-            y4[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif3_csr_p, stif3_csr_j, stif3_csr_x, W_now, y1); // dphidx * dphidy * W_now
         csr_matvec(csr_p_size, stif4_csr_p, stif4_csr_j, stif4_csr_x, W_now, y2); // dphidy * dphidx * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U2t_now, y3);  // phi    * phi    * U2t_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U2_now, y4);   // phi    * phi    * U2_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u2[i] = -c[1][i] * y1[i] - c[3][i] * y2[i] - rho[i] * mpml_dx[i] * y3[i] - rho[i] * mpml_dy[i] * y3[i] - rho[i] * mpml_dx[i] * mpml_dy[i] * y4[i];
+            rhs_u2[i] = -c[1][i] * y1[i] - c[3][i] * y2[i] - mpml_dx[i] * y3[i] - mpml_dy[i] * y3[i] - mpml_dx[i] * mpml_dy[i] * y4[i];
         }
 
         /********************************************************************************************************************************************
         Equation u3:
-         mass * U3tt_new = - c44 * dphidy * dphidy * U_now - 2.0 * rho * mpml_dy * phi * phi * U3t_now - rho * mpml_dy * mpml_dy * phi * phi * U3_now 
-                           + rho * phi * phi * Lx3_now + rho * phi * phi * Lx4_now
+         mass * U3tt_new = - c44 * dphidy * dphidy * U_now - 2.0 * mpml_dy * phi * phi * U3t_now - mpml_dy * mpml_dy * phi * phi * U3_now 
+                           + phi * phi * Lx3_now + phi * phi * Lx4_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-            y3[i] = 0.0;
-            y4[i] = 0.0;
-            y5[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif2_csr_p, stif2_csr_j, stif2_csr_x, U_now, y1); // dphidy * dphidy * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U3t_now, y2);  // phi    * phi    * U3t_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U3_now, y3);   // phi    * phi    * U3_now
@@ -476,86 +432,58 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx4_now, y5);  // phi    * phi    * Lx4_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u3[i] = -c[3][i] * y1[i] - 2.0 * rho[i] * mpml_dy[i] * y2[i] - rho[i] * mpml_dy[i] * mpml_dy[i] * y3[i] + rho[i] * y4[i] + rho[i] * y5[i];
+            rhs_u3[i] = -c[3][i] * y1[i] - 2.0 * mpml_dy[i] * y2[i] - mpml_dy[i] * mpml_dy[i] * y3[i] + y4[i] + y5[i];
         }
 
         /********************************************************************************************************************************************
          Equation u4:
-          mass * Lx1_new = - dt * c11 * mpml_dxx * phi * dphidx * U_now - dt * rho * mpml_dx * phi * phi * Lx1_now - rho * phi * phi * Lx1_now
+          mass * Lx1_new = - dt * c11 * mpml_dxx * phi * dphidx * U_now - dt * mpml_dx * phi * phi * Lx1_now + phi * phi * Lx1_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, U_now, y1); // phi    * dphidx * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx1_now, y2);  // phi    * phi    * Lx1_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u4[i] = -dt * c[0][i] * mpml_dxx[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_u4[i] = -dt * c[0][i] * mpml_dxx[i] * y1[i] - dt * mpml_dx[i] * y2[i] + y2[i];
         }
 
         /********************************************************************************************************************************************
          Equation u5:
-          mass * Lx2_new = - dt * c44 * mpml_dyy_pxy * phi * dphidx * W_now - dt * rho * mpml_dy * phi * phi * Lx2_now - rho * phi * phi * Lx2_now
+          mass * Lx2_new = - dt * c44 * mpml_dyy_pxy * phi * dphidx * W_now - dt * mpml_dy * phi * phi * Lx2_now + phi * phi * Lx2_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, W_now, y1); // phi    * dphidx * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, y2);  // phi    * phi    * Lx2_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u5[i] = -dt * c[3][i] * mpml_dyy_pxy[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_u5[i] = -dt * c[3][i] * mpml_dyy_pxy[i] * y1[i] - dt * mpml_dy[i] * y2[i] + y2[i];
         }
 
         /********************************************************************************************************************************************
          Equation u6:
-          mass * Lx3_new = - dt * c13 * mpml_dxx_pyx * phi * dphidy * W_now - dt * rho * mpml_dx * phi * phi * Lx3_now - rho * phi * phi * Lx3_now
+          mass * Lx3_new = - dt * c13 * mpml_dxx_pyx * phi * dphidy * W_now - dt * mpml_dx * phi * phi * Lx3_now + phi * phi * Lx3_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, W_now, y1); // phi    * dphidy * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx3_now, y2);  // phi    * phi    * Lx3_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u6[i] = -dt * c[1][i] * mpml_dxx_pyx[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_u6[i] = -dt * c[1][i] * mpml_dxx_pyx[i] * y1[i] - dt * mpml_dx[i] * y2[i] + y2[i];
         }
 
         /********************************************************************************************************************************************
          Equation u7:
-         mass * Lx4_new = - dt * c44 * mpml_dyy * phi * dphidy * U_now - dt * rho * mpml_dy * phi * phi * Lx4_now - phi * phi * Lx4_now
+         mass * Lx4_new = - dt * c44 * mpml_dyy * phi * dphidy * U_now - dt * mpml_dy * phi * phi * Lx4_now + phi * phi * Lx4_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, U_now, y1); // phi    * dphidy * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx4_now, y2);  // phi    * phi    * Lx4_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_u7[i] = -dt * c[3][i] * mpml_dyy[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_u7[i] = -dt * c[3][i] * mpml_dyy[i] * y1[i] - dt * mpml_dy[i] * y2[i] + y2[i];
         }
 
         /********************************************************************************************************************************************
         Equation w1:
-         mass * W1tt_new = - c44 * dphidx * dphidx * W_now - 2.0 * rho * mpml_dx * phi * phi * W1t_now - rho * mpml_dx * mpml_dx * phi * phi * W1_now 
+         mass * W1tt_new = - c44 * dphidx * dphidx * W_now - 2.0 * mpml_dx * phi * phi * W1t_now - mpml_dx * mpml_dx * phi * phi * W1_now 
                            + phi * phi * Ly1_now + phi * phi * Ly2_now + Source_y
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-            y3[i] = 0.0;
-            y4[i] = 0.0;
-            y5[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, W_now, y1); // dphidx * dphidx * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W1t_now, y2);  // phi    * phi    * W1t_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W1_now, y3);   // phi    * phi    * W1_now
@@ -563,43 +491,28 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly2_now, y5);  // phi    * phi    * Ly2_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w1[i] = -c[3][i] * y1[i] - 2.0 * rho[i] * mpml_dx[i] * y2[i] - rho[i] * mpml_dx[i] * mpml_dx[i] * y3[i] + rho[i] * y4[i] + rho[i] * y5[i] + (i == source_node) * point_source * cos(Angle_force * pi / 180.0);
+            rhs_w1[i] = -c[3][i] * y1[i] - 2.0 * mpml_dx[i] * y2[i] - mpml_dx[i] * mpml_dx[i] * y3[i] + y4[i] + y5[i] + (i == source_node) * point_source * cos(Angle_force * pi / 180.0);
         }
 
         /********************************************************************************************************************************************
         Equation w2:
-         mass * W2tt_new = - c44 * dphidx * dphidy * U_now - c13 * dphidy * dphidx * U_now - rho * mpml_dx * phi * phi * W2t_now 
-                           - rho * mpml_dy * phi * phi * W2t_now - rho * mpml_dx * mpml_dy * phi * phi * W2_now
+         mass * W2tt_new = - c44 * dphidx * dphidy * U_now - c13 * dphidy * dphidx * U_now - mpml_dx * phi * phi * W2t_now 
+                           - mpml_dy * phi * phi * W2t_now - mpml_dx * mpml_dy * phi * phi * W2_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-            y3[i] = 0.0;
-            y4[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif3_csr_p, stif3_csr_j, stif3_csr_x, U_now, y1); // dphidx * dphidy * U_now
         csr_matvec(csr_p_size, stif4_csr_p, stif4_csr_j, stif4_csr_x, U_now, y2); // dphidy * dphidx * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W2t_now, y3);  // phi    * phi    * W2t_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W2_now, y4);   // phi    * phi    * W2_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w2[i] = -c[3][i] * y1[i] - c[1][i] * y2[i] - rho[i] * mpml_dx[i] * y3[i] - rho[i] * mpml_dy[i] * y3[i] - rho[i] * mpml_dx[i] * mpml_dy[i] * y4[i];
+            rhs_w2[i] = -c[3][i] * y1[i] - c[1][i] * y2[i] - mpml_dx[i] * y3[i] - mpml_dy[i] * y3[i] - mpml_dx[i] * mpml_dy[i] * y4[i];
         }
 
         /********************************************************************************************************************************************
         Equation w3:
-         mass * W3tt_new = - c33 * dphidy * dphidy * W_now - 2.0 * rho * mpml_dy * phi * phi * W3t_now - rho * mpml_dy * mpml_dy * phi * phi * W3_now 
+         mass * W3tt_new = - c33 * dphidy * dphidy * W_now - 2.0 * mpml_dy * phi * phi * W3t_now - mpml_dy * mpml_dy * phi * phi * W3_now 
                            + phi * phi * Ly3_now + phi * phi * Ly4_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-            y3[i] = 0.0;
-            y4[i] = 0.0;
-            y5[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif2_csr_p, stif2_csr_j, stif2_csr_x, W_now, y1); // dphidy * dphidy * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W3t_now, y2);  // phi    * phi    * W3t_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W3_now, y3);   // phi    * phi    * W3_now
@@ -607,73 +520,57 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly4_now, y5);  // phi    * phi    * Ly4_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w3[i] = -c[2][i] * y1[i] - 2.0 * rho[i] * mpml_dy[i] * y2[i] - rho[i] * mpml_dy[i] * mpml_dy[i] * y3[i] + rho[i] * y4[i] + rho[i] * y5[i];
+            rhs_w3[i] = -c[2][i] * y1[i] - 2.0 * mpml_dy[i] * y2[i] - mpml_dy[i] * mpml_dy[i] * y3[i] + y4[i] + y5[i];
         }
 
         /********************************************************************************************************************************************
          Equation 4:
-          mass * Ly1_new = - dt * c44 * mpml_dxx * phi * dphidx * W_now - dt * rho * mpml_dx * phi * phi * Ly1_now - phi * phi * Ly1_now
+          mass * Ly1_new = - dt * c44 * mpml_dxx * phi * dphidx * W_now - dt * mpml_dx * phi * phi * Ly1_now + phi * phi * Ly1_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, W_now, y1); // phi    * dphidx * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly1_now, y2);  // phi    * phi    * Ly1_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w4[i] = -dt * c[3][i] * mpml_dxx[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_w4[i] = -dt * c[3][i] * mpml_dxx[i] * y1[i] - dt * mpml_dx[i] * y2[i] + y2[i];
         }
 
         /********************************************************************************************************************************************
          Equation w5:
-          mass * Ly2_new = - dt * c13 * mpml_dyy_pxy * phi * dphidx * U_now - dt * rho * mpml_dy * phi * phi * Ly2_now - phi * phi * Ly2_now
+          mass * Ly2_new = - dt * c13 * mpml_dyy_pxy * phi * dphidx * U_now - dt * mpml_dy * phi * phi * Ly2_now + phi * phi * Ly2_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, U_now, y1); // phi    * dphidx * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly2_now, y2);  // phi    * phi    * Ly2_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w5[i] = -dt * c[1][i] * mpml_dyy_pxy[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_w5[i] = -dt * c[1][i] * mpml_dyy_pxy[i] * y1[i] - dt * mpml_dy[i] * y2[i] + y2[i];
+
         }
 
         /********************************************************************************************************************************************
          Equation w6:
-          mass * Ly3_new = - dt * c44 * mpml_dxx_pyx * phi * dphidy * U_now - dt * rho * mpml_dx * phi * phi * Ly3_now - phi * phi * Ly3_now
+          mass * Ly3_new = - dt * c44 * mpml_dxx_pyx * phi * dphidy * U_now - dt * mpml_dx * phi * phi * Ly3_now + phi * phi * Ly3_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, U_now, y1); // phi    * dphidy * U_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly3_now, y2);  // phi    * phi    * Ly3_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w6[i] = -dt * c[3][i] * mpml_dxx_pyx[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_w6[i] = -dt * c[3][i] * mpml_dxx_pyx[i] * y1[i] - dt * mpml_dx[i] * y2[i] + y2[i];
         }
 
         /********************************************************************************************************************************************
          Equation w7:
-         mass * Ly4_new = - dt * c33 * mpml_dyy * phi * dphidy * W_now - dt * rho * mpml_dy * phi * phi * Ly4_now - phi * phi * Ly4_now
+         mass * Ly4_new = - dt * c33 * mpml_dyy * phi * dphidy * W_now - dt * mpml_dy * phi * phi * Ly4_now + phi * phi * Ly4_now
         *********************************************************************************************************************************************/
-        for (i = 0; i < node_num; i++)
-        {
-            y1[i] = 0.0;
-            y2[i] = 0.0;
-        }
         csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, W_now, y1); // phi    * dphidy * W_now
         csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly4_now, y2);  // phi    * phi    * Ly4_now
         for (i = 0; i < node_num; i++)
         {
-            rhs_w7[i] = -dt * c[2][i] * mpml_dyy[i] * y1[i] - dt * rho[i] * mpml_dx[i] * y2[i] - rho[i] * y2[i];
+            rhs_w7[i] = -dt * c[2][i] * mpml_dyy[i] * y1[i] - dt * mpml_dy[i] * y2[i] + y2[i];
         }
 
+        /***********************************
+                 solve liner system
+        ************************************/
         if (strcmp(solver, "masslump") == 0)
         {
             for (i = 0; i < node_num; i++)
@@ -726,7 +623,6 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
 
         for (i = 0; i < node_num; i++)
         {
-
             U1_now[i] = U1_now[i] + U1t_now[i] * dt + ((0.5 - alpha) * U1tt_now[i] + alpha * U1tt_new[i]) * dt * dt;
             U2_now[i] = U2_now[i] + U2t_now[i] * dt + ((0.5 - alpha) * U2tt_now[i] + alpha * U2tt_new[i]) * dt * dt;
             U3_now[i] = U3_now[i] + U3t_now[i] * dt + ((0.5 - alpha) * U3tt_now[i] + alpha * U3tt_new[i]) * dt * dt;
@@ -751,16 +647,15 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
             Energy_u[it] += U_now[i] * U_now[i];
             Energy_w[it] += W_now[i] * W_now[i];
 
-             if (Energy_u[it] > 10e6 || Energy_w[it] > 10e6)
+            if (Energy_u[it] > 10e6 || Energy_w[it] > 10e6)
             {
                 fprintf(stderr, "\n");
                 fprintf(stderr, "ELASTIC_MPML - Fatal error!\n");
                 fprintf(stderr, "Energy exceeds maximum value!\n");
                 exit(1);
             }
-            
         }
-        if ((it + 1) % 1 == 0)
+        if ((it + 1) % 20 == 0)
         {
             for (i = 0; i < node_num; i++)
             {
