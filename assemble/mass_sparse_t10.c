@@ -1,5 +1,5 @@
 
-void mass_sparse_t10(int node_num, int element_num, int element_order, int *element_node, double **node_xy, int *mi, int *mj, double *mass, int lumpflag)
+void mass_sparse_t10(int node_num, int element_num, int element_order, int *element_node, double **node_xy, double *rho, int *mi, int *mj, double *mass, int lumpflag)
 /* mass_sparse_t10 computes the mass matrix, store the matrix in the coo format (i,j,value), using 10-node triangles, 12 ponits quadrature rule.
 
   Reference Element T10:
@@ -179,11 +179,11 @@ void mass_sparse_t10(int node_num, int element_num, int element_order, int *elem
                     jp = element_node[jq + element] - 1; // c array from 0
                     if (lumpflag == 1)
                     {
-                        mass_sum = mass_sum + area * weight[quad] * phi[iq] * phi[jq];
+                        mass_sum = mass_sum + area * weight[quad] * rho[ip] * phi[iq] * phi[jq];
                         if (ip == jp)
                         {
-                            diag_sum = diag_sum + area * weight[quad] * phi[iq] * phi[jq];
-                            mass[ip] = mass[ip] + area * weight[quad] * phi[iq] * phi[jq];
+                            diag_sum = diag_sum + area * weight[quad] * rho[ip] * phi[iq] * phi[jq];
+                            mass[ip] = mass[ip] + area * weight[quad] * rho[ip] * phi[iq] * phi[jq];
                         }
                     }
                     else
@@ -191,7 +191,7 @@ void mass_sparse_t10(int node_num, int element_num, int element_order, int *elem
                         coo_index = element * element_order + iq * element_order + jq;
                         mi[coo_index] = ip;
                         mj[coo_index] = jp;
-                        mass[coo_index] = mass[coo_index] + area * weight[quad] * phi[iq] * phi[jq];
+                        mass[coo_index] = mass[coo_index] + area * weight[quad] * rho[ip] * phi[iq] * phi[jq];
                     }
                 }
             }

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include "timestamp.c"
 #include "../mesh/element_type.c"
 #include "../mesh/mesh_node_num.c"
 #include "../mesh/mesh_element.c"
@@ -19,9 +20,9 @@
 #include "../source_receiver/node_location.c"
 #include "../source_receiver/seismic_source.c"
 //#include "../wave/acoustic.c"
-#include "../wave/acoustic_pml.c"
+//#include "../wave/acoustic_pml.c"
+#include "../wave/elastic_mpml.c"
 #include "../solver/solver_type.c"
-#include "timestamp.c"
 
 int main()
 /******************************************************************************/
@@ -55,10 +56,10 @@ int main()
   int element, order, i, j;
   char *type;
   char *solver;
-  int type_code = 4;
-  int solver_code = 1;
-  int nelemx = 100;
-  int nelemy = 100;
+  int type_code = 1;
+  int solver_code = 3;
+  int nelemx = 20;
+  int nelemy = 20;
   int edge_size = 10;
   int pml_nx = 10;
   int pml_ny = 10;
@@ -145,9 +146,9 @@ int main()
   printf("\n Source node is      %d\n", source_node);
 
   //acoustic(type, node_num, element_num, element_order, element_node, node_xy, nnz, csr_p_size, step, dt, f0, t0, source_node, solver);
-  acoustic_pml(type, node_num, element_num, element_order, element_node, node_xy, nnz, csr_p_size, step, dt, f0, t0, edge_size, \
+  // acoustic_pml(type, node_num, element_num, element_order, element_node, node_xy, nnz, csr_p_size, step, dt, f0, t0, edge_size, \
                xmin, xmax, ymin, ymax, pml_nx, pml_ny, source_node, solver);
-
+  elastic_mpml(type, node_num, element_num, element_order, element_node, node_xy, nnz, csr_p_size, step, dt, f0, t0, edge_size, xmin, xmax, ymin, ymax, pml_nx, pml_ny, source_node, solver);
     
   /***************************************
               free memory

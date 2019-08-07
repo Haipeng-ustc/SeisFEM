@@ -21,6 +21,9 @@ subroutine coo2csr_canonical(nnz, Bp_size, csr_size, Ai, Aj, Ax, Bp, Bj, Bx)
     print *
 
     write(*,*) "coo2csr_canonical: Initialization."
+    Bp = 0
+    Bj = 0
+    Bx = 0.0
     Ai = Ai + 1
     Aj = Aj + 1
     call coo2csr(nnz, Bp_size, Ai, Aj, Ax, Bp_temp, Bj_temp, Bx_temp)
@@ -53,7 +56,7 @@ subroutine coo2csr(nnz, Bp_size, Ai, Aj, Ax, Bp, Bj, Bx)
         Bp = 0
 
        do n = 1,nnz
-	  Bp(Ai(n)) = Bp(Ai(n)) + 1
+	        Bp(Ai(n)) = Bp(Ai(n)) + 1
        end do
 
         cumsum = 1
@@ -100,7 +103,7 @@ subroutine csr_sum_duplicates(nnz, Bp_size, Bp, Bj, Bx)
         ! Ap, Aj, and Ax will be modified *inplace*
    	    integer ( kind = 4 ) nnz, Bp_size
         integer ( kind = 4 ), dimension(Bp_size) :: Bp
-	    integer ( kind = 4 ), dimension(  nnz  ) :: Bj
+	      integer ( kind = 4 ), dimension(  nnz  ) :: Bj
         double precision    , dimension(  nnz  ) :: Bx
         integer :: r1, r2, i, j, jj, kk
         double precision :: x

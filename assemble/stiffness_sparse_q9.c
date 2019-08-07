@@ -266,9 +266,9 @@ void stiffness_sparse_q9(int node_num, int element_num, int element_order, int *
             else if(stif_type == 2)
                 stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (                        + dphidy[iq] * dphidy[jq]);
             else if(stif_type == 3)
-                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (dphidx[iq] * dphidy[iq]                          );
+                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (dphidx[iq] * dphidy[jq]                          );
             else if(stif_type == 4)
-                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (                        + dphidy[iq] * dphidx[iq]  );
+                stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (                        + dphidy[iq] * dphidx[jq]  );
             else if(stif_type == 5)
                 stiffness[coo_index] = stiffness[coo_index] + area * weight[quad] * (   phi[iq] * dphidx[jq]                          );
             else if(stif_type == 6)

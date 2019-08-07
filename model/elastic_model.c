@@ -28,11 +28,11 @@ void elastic_model(int node_num, int element_num, int element_order, int *elemen
 			x = node_xy[0][p];
 			y = node_xy[1][p];
 
-			if (x >= 0 && y >= 5) //  set model condition
+			if (x >= 0 && y >= 0) //  set model condition
 			{
-				RHO = 2200;
-				vp = 2200;
-				vs = 1154.7;
+				RHO = 2200.0;
+				VP = 2000.0;
+				VS = 1154.7;
 				miu = VS * VS * RHO;
 				lamda = VP * VP * RHO - 2 * miu;
 				rho[p] = RHO;
@@ -45,9 +45,9 @@ void elastic_model(int node_num, int element_num, int element_order, int *elemen
 			}
 			else
 			{
-				RHO = 2200;
-				vp = 3000;
-				vs = 1732.1;
+				RHO = 2200.0;
+				VP = 3000.0;
+				VS = 1732.1;
                 miu = VS * VS * RHO;
                 lamda = VP * VP * RHO - 2 * miu;
                 rho[p] = RHO;
