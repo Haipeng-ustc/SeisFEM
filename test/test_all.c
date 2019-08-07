@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 #include <math.h>
 #include <time.h>
 #include <string.h>
-#include "timestamp.c"
 #include "../mesh/element_type.c"
 #include "../mesh/mesh_node_num.c"
 #include "../mesh/mesh_element.c"
@@ -58,8 +58,8 @@ int main()
   char *solver;
   int type_code = 1;
   int solver_code = 3;
-  int nelemx = 400;
-  int nelemy = 400;
+  int nelemx = 100;
+  int nelemy = 100;
   int edge_size = 10;
   int pml_nx = 10;
   int pml_ny = 10;
@@ -74,6 +74,8 @@ int main()
   double ymax;
   int *element_node = NULL;
   double **node_xy = NULL;
+  double program_start_time, program_run_time;
+
   /***************************************
               seismic source		
   ****************************************/
@@ -97,7 +99,7 @@ int main()
   /***************************************
             prepare parameters
   ****************************************/
-  timestamp ( );
+  program_start_time = omp_get_wtime();
 
   xmin = 0.0;
   ymin = 0.0;
@@ -157,11 +159,11 @@ int main()
   free(element_node);
   for (i = 0; i < 2; i++) free(node_xy[i]);
   free(node_xy);
-
   fclose(fp_node_xy);
 
   printf("\n Free all dynamic arrays!\n");
+  program_run_time = omp_get_wtime() - program_start_time;
+  printf("\n Total run time is: %f\n",program_run_time);
   printf("\n Normal End!\n");
-  timestamp ( );
   return 0;
 }
