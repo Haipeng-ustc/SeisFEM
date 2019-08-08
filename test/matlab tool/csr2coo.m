@@ -1,22 +1,27 @@
 clear;
 clc;
 % test_lump = load('test_lump.dat');
-test_p = load('stif_p.dat');
-test_j = load('stif_j.dat');
-test_x = load('stif_x.dat');
-test_p = test_p + 1;
-test_j = test_j + 1;
+test_csr_p = load('mass_p.dat');
+test_csr_j = load('mass_j.dat');
+test_csr_x = load('mass_x.dat');
+test_csr_p = test_csr_p + 1;
+test_csr_j = test_csr_j + 1;
 
-[np,junk ] = size(test_p);
+[np,junk ] = size(test_csr_p);
 nrow = np - 1;
 
 for i = nrow: -1 : 1
-    k1 = test_p(i+1) - 1;
-    k2 = test_p(i);
+    k1 = test_csr_p(i+1) - 1;
+    k2 = test_csr_p(i);
     for k = k1: -1:  k2
-        test_i(k) = i;
+        test_csr_i(k) = i;
     end
 end 
-test_i = test_i';
-test = sparse(test_i, test_j, test_x, nrow, nrow);
-imagesc(test);
+test_csr_i = test_csr_i';
+test_csr = sparse(test_csr_i, test_csr_j, test_csr_x, nrow, nrow);
+imagesc(test_csr);
+
+rhs = [0:1:nrow-1]';
+a = rhs\test_csr;
+
+

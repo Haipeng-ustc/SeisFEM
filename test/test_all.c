@@ -58,8 +58,8 @@ int main()
   char *solver;
   int type_code = 1;
   int solver_code = 3;
-  int nelemx = 400;
-  int nelemy = 400;
+  int nelemx = 20;
+  int nelemy = 20;
   int edge_size = 5;
   int pml_nx = 10;
   int pml_ny = 10;
@@ -88,7 +88,7 @@ int main()
   /***************************************
               time evolution
   ****************************************/
-  int step = 2000;
+  int step = 2;
   double dt = 0.0005;
 
   /***************************************
@@ -116,10 +116,10 @@ int main()
   type = element_type(type_code);
   solver = solver_type(solver_code);
   element_order = mesh_element_order(type);
-  //node_num = mesh_node_num(type, nelemx, nelemy);
-  //element_num = mesh_element_num(type, nelemx, nelemy);
-  node_num = mesh_node_num_read(mesh_par_name);
-  element_num = mesh_element_num_read(mesh_par_name);
+  node_num = mesh_node_num(type, nelemx, nelemy);
+  element_num = mesh_element_num(type, nelemx, nelemy);
+  //node_num = mesh_node_num_read(mesh_par_name);
+  //element_num = mesh_element_num_read(mesh_par_name);
   csr_p_size = node_num + 1;
   nnz = element_num * element_order * element_order;
 
@@ -136,10 +136,10 @@ int main()
   for (i = 0; i < 2; i++)
     node_xy[i] = malloc(sizeof(double) * node_num);
 
-  mesh_element_read(element_name, element_num, element_order, element_node);
-  mesh_xy_read(node_xy_name, node_num, node_xy);
-  //mesh_element(type, nelemx, nelemy, element_node);
-  //mesh_xy(type, nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+  mesh_element(type, nelemx, nelemy, element_node);
+  mesh_xy(type, nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+  //mesh_element_read(element_name, element_num, element_order, element_node);
+  //mesh_xy_read(node_xy_name, node_num, node_xy);
 
   source_node = node_location(node_num, edge_size, node_xy, source_x, source_y);
 
