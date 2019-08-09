@@ -9,11 +9,11 @@ char *solver_type(int i)
 
   List:
 
+   SOLVER_TYPE List:
     I  SOLVER_TYPE   Definition
     -  ------------   ----------
-    1  mgmres         Generalized Minimum Residual (GMRES) algorithm,
-                      using compressed row sparse matrix format
-    2  superlu        LU decomposition to solver linear system;
+    1  pardiso        require license and only valid for username haipeng;
+    2  mgmres         Generalized Minimum Residual (GMRES) algorithm, CSR format;
     3  masslump       masslump.
 
 */
@@ -22,13 +22,13 @@ char *solver_type(int i)
 
   if (i == 1)
   {
-    value = (char *)malloc(6 * sizeof(char));
-    strcpy(value, "mgmres");
+    value = (char *)malloc(8 * sizeof(char));
+    strcpy(value, "pardiso");
   }
   else if (i == 2)
   {
-    value = (char *)malloc(7 * sizeof(char));
-    strcpy(value, "superlu");
+    value = (char *)malloc(8 * sizeof(char));
+    strcpy(value, "mgmres");
   }
   else if (i == 3)
   {

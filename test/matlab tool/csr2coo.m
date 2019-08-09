@@ -19,9 +19,10 @@ for i = nrow: -1 : 1
 end 
 test_csr_i = test_csr_i';
 test_csr = sparse(test_csr_i, test_csr_j, test_csr_x, nrow, nrow);
-imagesc(test_csr);
 
+tol = 10e-6;
+[Lower ,  Upper]  = ilu(test_csr);
 rhs = [0:1:nrow-1]';
-a = rhs\test_csr;
+x = gmres(test_csr, rhs, 10, tol, 100, Lower, Upper);
 
 

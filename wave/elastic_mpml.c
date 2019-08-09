@@ -13,7 +13,7 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         4  dphi_dy * dphi_dx
         5  phi     * dphi_dx
         6  phi     * dphi_dy
- */
+    */
     /***************************************
      coo(i,j,x) and csr(p,j,x) arrays
      ****************************************/
@@ -117,11 +117,11 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
     /***************************************
                   file pointers
      ****************************************/
-    FILE *fp_wavefield_u, *fp_wavefield_w;
-    FILE *fp_energy_u, *fp_energy_w;
+    FILE *fp_wavefield_u,  *fp_wavefield_w;
+    FILE *fp_energy_u,     *fp_energy_w;
     FILE *fp_seismogram_u, *fp_seismogram_w;
-    char filename_wavefield_u[128], filename_wavefield_w[128];
-    char filename_energy_u[128], filename_energy_w[128];
+    char filename_wavefield_u[128],  filename_wavefield_w[128];
+    char filename_energy_u[128],     filename_energy_w[128];
     char filename_seismogram_u[128], filename_seismogram_w[128];
 
     /****************************************************************************
@@ -195,7 +195,8 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         mass_csr_j[i] = mass_csr_j_temp[i];
         mass_csr_x[i] = mass_csr_x_temp[i];
     }
-    __coo2csr_lib_MOD_csr2csc(&node_num, &mass_csr_size, mass_csr_x, mass_csr_j, mass_csr_p, mass_csc_x, mass_csc_j, mass_csc_p);
+    // pardiso need csr and superlu need csc
+    //__coo2csr_lib_MOD_csr2csc(&node_num, &mass_csr_size, mass_csr_x, mass_csr_j, mass_csr_p, mass_csc_x, mass_csc_j, mass_csc_p);
 
     // stiffness1: dphidx * dphidx
     stif_sparse_all(type, node_num, element_num, element_order, element_node, node_xy, stif_coo_i, stif_coo_j, stif_coo_x, 1);
@@ -413,8 +414,8 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
         for (it = 2; it < step; it++)
         {
             time = (it + 1) * dt;
-            if ((it + 1) % 100 == 0)
-                printf("\n Iteration step: %-d, time: %-f s\n ", it + 1, time);
+            if ((it + 1) % 50 == 0)
+                printf("\n ******Iteration step: %-d, time: %-f s\n ", it + 1, time);
             Energy_u[it] = 0.0;
             Energy_w[it] = 0.0;
             point_source = seismic_source(f0, t0, 1.0e10, time);
@@ -424,137 +425,155 @@ void elastic_mpml(char *type, int node_num, int element_num, int element_order, 
           mass * U1tt_new = - c11 * dphidx * dphidx * U_now - 2.0 * mpml_dx * phi * phi * U1t_now - mpml_dx * mpml_dx * phi * phi * U1_now 
                             + phi * phi * Lx1_now + phi * phi * Lx2_now + Source_x
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, U_now, equ1_1); // dphidx * dphidx * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1t_now, equ1_2);  // phi    * phi    * U1t_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1_now, equ1_3);   // phi    * phi    * U1_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx1_now, equ1_4);  // phi    * phi    * Lx1_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, equ1_5);  // phi    * phi    * Lx2_now
+        csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, U_now, equ1_1); // dphidx * dphidx * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1t_now, equ1_2);  // phi    * phi    * U1t_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U1_now, equ1_3);   // phi    * phi    * U1_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx1_now, equ1_4);  // phi    * phi    * Lx1_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, equ1_5);  // phi    * phi    * Lx2_now
         /********************************************************************************************************************************************
          Equation u2:
           mass * U2tt_new = - c13 * dphidx * dphidy * W_now - c44 * dphidy * dphidx * W_now - mpml_dx * phi * phi * U2t_now 
                             - mpml_dy * phi * phi * U2t_now - mpml_dx * mpml_dy * phi * phi * U2_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif3_csr_p, stif3_csr_j, stif3_csr_x, W_now, equ2_1); // dphidx * dphidy * W_now
-            csr_matvec(csr_p_size, stif4_csr_p, stif4_csr_j, stif4_csr_x, W_now, equ2_2); // dphidey * dphidx * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U2t_now, equ2_3);  // phi    * phi    * U2t_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U2_now, equ2_4);   // phi    * phi    * U2_now
+        csr_matvec(csr_p_size, stif3_csr_p, stif3_csr_j, stif3_csr_x, W_now, equ2_1); // dphidx * dphidy * W_now
+        csr_matvec(csr_p_size, stif4_csr_p, stif4_csr_j, stif4_csr_x, W_now, equ2_2); // dphidy * dphidx * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U2t_now, equ2_3);  // phi    * phi    * U2t_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U2_now, equ2_4);   // phi    * phi    * U2_now
         /********************************************************************************************************************************************
          Equation u3:
           mass * U3tt_new = - c44 * dphidy * dphidy * U_now - 2.0 * mpml_dy * phi * phi * U3t_now - mpml_dy * mpml_dy * phi * phi * U3_now 
                             + phi * phi * Lx3_now + phi * phi * Lx4_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif2_csr_p, stif2_csr_j, stif2_csr_x, U_now, equ3_1); // dphidy * dphidy * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U3t_now, equ3_2);  // phi    * phi    * U3t_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U3_now, equ3_3);   // phi    * phi    * U3_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx3_now, equ3_4);  // phi    * phi    * Lx3_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx4_now, equ3_5);  // phi    * phi    * Lx4_now
+        csr_matvec(csr_p_size, stif2_csr_p, stif2_csr_j, stif2_csr_x, U_now, equ3_1); // dphidy * dphidy * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U3t_now, equ3_2);  // phi    * phi    * U3t_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, U3_now, equ3_3);   // phi    * phi    * U3_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx3_now, equ3_4);  // phi    * phi    * Lx3_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx4_now, equ3_5);  // phi    * phi    * Lx4_now
         /********************************************************************************************************************************************
          Equation u4:
           mass * Lx1_new = - dt * c11 * mpml_dxx * phi * dphidx * U_now - dt * mpml_dx * phi * phi * Lx1_now + phi * phi * Lx1_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, U_now, equ4_1); // phi    * dphidx * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx1_now, equ4_2);  // phi    * phi    * Lx1_now
+        csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, U_now, equ4_1); // phi    * dphidx * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx1_now, equ4_2);  // phi    * phi    * Lx1_now
         /********************************************************************************************************************************************
          Equation u5:
           mass * Lx2_new = - dt * c44 * mpml_dyy_pxy * phi * dphidx * W_now - dt * mpml_dy * phi * phi * Lx2_now + phi * phi * Lx2_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, W_now, equ5_1); // phi    * dphidx * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, equ5_2);  // phi    * phi    * Lx2_now
+        csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, W_now, equ5_1); // phi    * dphidx * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx2_now, equ5_2);  // phi    * phi    * Lx2_now
         /********************************************************************************************************************************************
          Equation u6:
           mass * Lx3_new = - dt * c13 * mpml_dxx_pyx * phi * dphidy * W_now - dt * mpml_dx * phi * phi * Lx3_now + phi * phi * Lx3_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, W_now, equ6_1); // phi    * dphidy * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx3_now, equ6_2);  // phi    * phi    * Lx3_now
+        csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, W_now, equ6_1); // phi    * dphidy * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx3_now, equ6_2);  // phi    * phi    * Lx3_now
         /********************************************************************************************************************************************
          Equation u7:
          mass * Lx4_new = - dt * c44 * mpml_dyy * phi * dphidy * U_now - dt * mpml_dy * phi * phi * Lx4_now + phi * phi * Lx4_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, U_now, equ7_1); // phi    * dphidy * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx4_now, equ7_2);  // phi    * phi    * Lx4_now
+        csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, U_now, equ7_1); // phi    * dphidy * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Lx4_now, equ7_2);  // phi    * phi    * Lx4_now
 
-            #pragma omp parallel for private(i)
-            for (i = 0; i < node_num; i++)
-            {
-                rhs_u1[i] = -c[0][i] * equ1_1[i] - 2.0 * mpml_dx[i] * equ1_2[i] - mpml_dx[i] * mpml_dx[i] * equ1_3[i] + equ1_4[i] + equ1_5[i] + (i == source_node) * point_source * sin(Angle_force * pi / 180.0);
-                rhs_u2[i] = -c[1][i] * equ2_1[i] - c[3][i] * equ2_2[i] - mpml_dx[i] * equ2_3[i] - mpml_dy[i] * equ2_3[i] - mpml_dx[i] * mpml_dy[i] * equ2_4[i];
-                rhs_u3[i] = -c[3][i] * equ3_1[i] - 2.0 * mpml_dy[i] * equ3_2[i] - mpml_dy[i] * mpml_dy[i] * equ3_3[i] + equ3_4[i] + equ3_5[i];
-                rhs_u4[i] = -dt * c[0][i] * mpml_dxx[i] * equ4_1[i] - dt * mpml_dx[i] * equ4_2[i] + equ4_2[i];
-                rhs_u5[i] = -dt * c[3][i] * mpml_dyy_pxy[i] * equ5_1[i] - dt * mpml_dy[i] * equ5_2[i] + equ5_2[i];
-                rhs_u6[i] = -dt * c[1][i] * mpml_dxx_pyx[i] * equ6_1[i] - dt * mpml_dx[i] * equ6_2[i] + equ6_2[i];
-                rhs_u7[i] = -dt * c[3][i] * mpml_dyy[i] * equ7_1[i] - dt * mpml_dy[i] * equ7_2[i] + equ7_2[i];
-            }
+        #pragma omp parallel for private(i)
+        for (i = 0; i < node_num; i++)
+        {
+            rhs_u1[i] = -c[0][i] * equ1_1[i] - 2.0 * mpml_dx[i] * equ1_2[i] - mpml_dx[i] * mpml_dx[i] * equ1_3[i] + equ1_4[i] + equ1_5[i] + (i == source_node) * point_source * sin(Angle_force * pi / 180.0);
+            rhs_u2[i] = -c[1][i] * equ2_1[i] - c[3][i] * equ2_2[i] - mpml_dx[i] * equ2_3[i] - mpml_dy[i] * equ2_3[i] - mpml_dx[i] * mpml_dy[i] * equ2_4[i];
+            rhs_u3[i] = -c[3][i] * equ3_1[i] - 2.0 * mpml_dy[i] * equ3_2[i] - mpml_dy[i] * mpml_dy[i] * equ3_3[i] + equ3_4[i] + equ3_5[i];
+            rhs_u4[i] = -dt * c[0][i] * mpml_dxx[i] * equ4_1[i] - dt * mpml_dx[i] * equ4_2[i] + equ4_2[i];
+            rhs_u5[i] = -dt * c[3][i] * mpml_dyy_pxy[i] * equ5_1[i] - dt * mpml_dy[i] * equ5_2[i] + equ5_2[i];
+            rhs_u6[i] = -dt * c[1][i] * mpml_dxx_pyx[i] * equ6_1[i] - dt * mpml_dx[i] * equ6_2[i] + equ6_2[i];
+            rhs_u7[i] = -dt * c[3][i] * mpml_dyy[i] * equ7_1[i] - dt * mpml_dy[i] * equ7_2[i] + equ7_2[i];
+        }
 
         /********************************************************************************************************************************************
          Equation w1:
           mass * W1tt_new = - c44 * dphidx * dphidx * W_now - 2.0 * mpml_dx * phi * phi * W1t_now - mpml_dx * mpml_dx * phi * phi * W1_now 
                             + phi * phi * Ly1_now + phi * phi * Ly2_now + Source_y
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, W_now, equ1_1); // dphidx * dphidx * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W1t_now, equ1_2);  // phi    * phi    * W1t_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W1_now, equ1_3);   // phi    * phi    * W1_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly1_now, equ1_4);  // phi    * phi    * Ly1_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly2_now, equ1_5);  // phi    * phi    * Ly2_now
+        csr_matvec(csr_p_size, stif1_csr_p, stif1_csr_j, stif1_csr_x, W_now, equ1_1); // dphidx * dphidx * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W1t_now, equ1_2);  // phi    * phi    * W1t_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W1_now, equ1_3);   // phi    * phi    * W1_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly1_now, equ1_4);  // phi    * phi    * Ly1_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly2_now, equ1_5);  // phi    * phi    * Ly2_now
         /********************************************************************************************************************************************
          Equation w2:
           mass * W2tt_new = - c44 * dphidx * dphidy * U_now - c13 * dphidy * dphidx * U_now - mpml_dx * phi * phi * W2t_now 
                             - mpml_dy * phi * phi * W2t_now - mpml_dx * mpml_dy * phi * phi * W2_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif3_csr_p, stif3_csr_j, stif3_csr_x, U_now, equ2_1); // dphidx * dphidy * U_now
-            csr_matvec(csr_p_size, stif4_csr_p, stif4_csr_j, stif4_csr_x, U_now, equ2_2); // dphidy * dphidx * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W2t_now, equ2_3);  // phi    * phi    * W2t_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W2_now, equ2_4);   // phi    * phi    * W2_now
+        csr_matvec(csr_p_size, stif3_csr_p, stif3_csr_j, stif3_csr_x, U_now, equ2_1); // dphidx * dphidy * U_now
+        csr_matvec(csr_p_size, stif4_csr_p, stif4_csr_j, stif4_csr_x, U_now, equ2_2); // dphidy * dphidx * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W2t_now, equ2_3);  // phi    * phi    * W2t_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W2_now, equ2_4);   // phi    * phi    * W2_now
         /********************************************************************************************************************************************
          Equation w3:
           mass * W3tt_new = - c33 * dphidy * dphidy * W_now - 2.0 * mpml_dy * phi * phi * W3t_now - mpml_dy * mpml_dy * phi * phi * W3_now 
                             + phi * phi * Ly3_now + phi * phi * Ly4_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif2_csr_p, stif2_csr_j, stif2_csr_x, W_now, equ3_1); // dphidy * dphidy * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W3t_now, equ3_2);  // phi    * phi    * W3t_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W3_now, equ3_3);   // phi    * phi    * W3_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly3_now, equ3_4);  // phi    * phi    * Ly3_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly4_now, equ3_5);  // phi    * phi    * Ly4_now
+        csr_matvec(csr_p_size, stif2_csr_p, stif2_csr_j, stif2_csr_x, W_now, equ3_1); // dphidy * dphidy * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W3t_now, equ3_2);  // phi    * phi    * W3t_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, W3_now, equ3_3);   // phi    * phi    * W3_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly3_now, equ3_4);  // phi    * phi    * Ly3_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly4_now, equ3_5);  // phi    * phi    * Ly4_now
         /********************************************************************************************************************************************
          Equation 4:
           mass * Ly1_new = - dt * c44 * mpml_dxx * phi * dphidx * W_now - dt * mpml_dx * phi * phi * Ly1_now + phi * phi * Ly1_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, W_now, equ4_1); // phi    * dphidx * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly1_now, equ4_2);  // phi    * phi    * Ly1_now
+        csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, W_now, equ4_1); // phi    * dphidx * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly1_now, equ4_2);  // phi    * phi    * Ly1_now
         /********************************************************************************************************************************************
          Equation w5:
           mass * Ly2_new = - dt * c13 * mpml_dyy_pxy * phi * dphidx * U_now - dt * mpml_dy * phi * phi * Ly2_now + phi * phi * Ly2_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, U_now, equ5_1); // phi    * dphidx * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly2_now, equ5_2);  // phi    * phi    * Ly2_now
+        csr_matvec(csr_p_size, stif5_csr_p, stif5_csr_j, stif5_csr_x, U_now, equ5_1); // phi    * dphidx * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly2_now, equ5_2);  // phi    * phi    * Ly2_now
         /********************************************************************************************************************************************
          Equation w6:
           mass * Ly3_new = - dt * c44 * mpml_dxx_pyx * phi * dphidy * U_now - dt * mpml_dx * phi * phi * Ly3_now + phi * phi * Ly3_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, U_now, equ6_1); // phi    * dphidy * U_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly3_now, equ6_2);  // phi    * phi    * Ly3_now
+        csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, U_now, equ6_1); // phi    * dphidy * U_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly3_now, equ6_2);  // phi    * phi    * Ly3_now
         /********************************************************************************************************************************************
          Equation w7:
           mass * Ly4_new = - dt * c33 * mpml_dyy * phi * dphidy * W_now - dt * mpml_dy * phi * phi * Ly4_now + phi * phi * Ly4_now
         *********************************************************************************************************************************************/
-            csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, W_now, equ7_1); // phi    * dphidy * W_now
-            csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly4_now, equ7_2);  // phi    * phi    * Ly4_now
+        csr_matvec(csr_p_size, stif6_csr_p, stif6_csr_j, stif6_csr_x, W_now, equ7_1); // phi    * dphidy * W_now
+        csr_matvec(csr_p_size, mass_csr_p, mass_csr_j, mass_csr_x, Ly4_now, equ7_2);  // phi    * phi    * Ly4_now
 
-            #pragma omp parallel for private(i)
-            for (i = 0; i < node_num; i++)
-            {
-                rhs_w1[i] = -c[3][i] * equ1_1[i] - 2.0 * mpml_dx[i] * equ1_2[i] - mpml_dx[i] * mpml_dx[i] * equ1_3[i] + equ1_4[i] + equ1_5[i] + (i == source_node) * point_source * cos(Angle_force * pi / 180.0);
-                rhs_w2[i] = -c[3][i] * equ2_1[i] - c[1][i] * equ2_2[i] - mpml_dx[i] * equ2_3[i] - mpml_dy[i] * equ2_3[i] - mpml_dx[i] * mpml_dy[i] * equ2_4[i];
-                rhs_w3[i] = -c[2][i] * equ3_1[i] - 2.0 * mpml_dy[i] * equ3_2[i] - mpml_dy[i] * mpml_dy[i] * equ3_3[i] + equ3_4[i] + equ3_5[i];
-                rhs_w4[i] = -dt * c[3][i] * mpml_dxx[i] * equ4_1[i] - dt * mpml_dx[i] * equ4_2[i] + equ4_2[i];
-                rhs_w5[i] = -dt * c[1][i] * mpml_dyy_pxy[i] * equ5_1[i] - dt * mpml_dy[i] * equ5_2[i] + equ5_2[i];
-                rhs_w6[i] = -dt * c[3][i] * mpml_dxx_pyx[i] * equ6_1[i] - dt * mpml_dx[i] * equ6_2[i] + equ6_2[i];
-                rhs_w7[i] = -dt * c[2][i] * mpml_dyy[i] * equ7_1[i] - dt * mpml_dy[i] * equ7_2[i] + equ7_2[i];
-            }
+        #pragma omp parallel for private(i)
+        for (i = 0; i < node_num; i++)
+        {
+            rhs_w1[i] = -c[3][i] * equ1_1[i] - 2.0 * mpml_dx[i] * equ1_2[i] - mpml_dx[i] * mpml_dx[i] * equ1_3[i] + equ1_4[i] + equ1_5[i] + (i == source_node) * point_source * cos(Angle_force * pi / 180.0);
+            rhs_w2[i] = -c[3][i] * equ2_1[i] - c[1][i] * equ2_2[i] - mpml_dx[i] * equ2_3[i] - mpml_dy[i] * equ2_3[i] - mpml_dx[i] * mpml_dy[i] * equ2_4[i];
+            rhs_w3[i] = -c[2][i] * equ3_1[i] - 2.0 * mpml_dy[i] * equ3_2[i] - mpml_dy[i] * mpml_dy[i] * equ3_3[i] + equ3_4[i] + equ3_5[i];
+            rhs_w4[i] = -dt * c[3][i] * mpml_dxx[i] * equ4_1[i] - dt * mpml_dx[i] * equ4_2[i] + equ4_2[i];
+            rhs_w5[i] = -dt * c[1][i] * mpml_dyy_pxy[i] * equ5_1[i] - dt * mpml_dy[i] * equ5_2[i] + equ5_2[i];
+            rhs_w6[i] = -dt * c[3][i] * mpml_dxx_pyx[i] * equ6_1[i] - dt * mpml_dx[i] * equ6_2[i] + equ6_2[i];
+            rhs_w7[i] = -dt * c[2][i] * mpml_dyy[i] * equ7_1[i] - dt * mpml_dy[i] * equ7_2[i] + equ7_2[i];
+        }
 
         /***********************************
                  solve liner system
         ************************************/
-            if (strcmp(solver, "masslump") == 0)
+          
+          if (strcmp(solver, "pardiso") == 0)
+          {
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u1, U1tt_new);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u2, U2tt_new);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u3, U3tt_new);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u4, Lx1_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u5, Lx2_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u6, Lx3_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_u7, Lx4_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w1, W1tt_new);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w2, W2tt_new);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w3, W3tt_new);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w4, Ly1_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w5, Ly2_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w6, Ly3_now);
+            pardiso_unsym(mass_csr_size, node_num, mass_csr_p, mass_csr_j, mass_csr_x, rhs_w7, Ly4_now);
+          }
+          else if (strcmp(solver, "masslump") == 0)
             {
                 #pragma omp parallel for private(i)
                 for (i = 0; i < node_num; i++)
