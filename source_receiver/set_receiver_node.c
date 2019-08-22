@@ -11,7 +11,8 @@ void set_receiver_node(int rec_num, int node_num, double edge_size, double *rec_
 	int i;
 	double x, y;
 	FILE *fp_receiver_xy;
-	fp_receiver_xy = fopen("receiver_xy.dat", "w");
+    if ((fp_receiver_xy = fopen("./outputfile/receiver_station.txt", "w")) == NULL)
+        printf("\n receiver_station.txt file cannot open\n");
 	if (rec_num >= 1)
 	{
 		for (i = 0; i < rec_num; i++)
@@ -20,7 +21,7 @@ void set_receiver_node(int rec_num, int node_num, double edge_size, double *rec_
 			x = rec_x[i];
 			y = rec_y[i];
 			rec_node[i] = node_location(node_num, edge_size, node_xy, x, y);
-			fprintf(fp_receiver_xy, "%lf	%lf\n", node_xy[0][rec_node[i]], node_xy[1][rec_node[i]]);
+			fprintf(fp_receiver_xy, "%f	%f\n", node_xy[0][rec_node[i]], node_xy[1][rec_node[i]]);
 		}
 	}
 	else

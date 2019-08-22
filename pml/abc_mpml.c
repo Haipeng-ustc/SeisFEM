@@ -1,7 +1,7 @@
 void abc_mpml(int node_num, int element_num, int element_order, int *element_node, double **node_xy,
-							 int mpml_nx, int mpml_ny, double h, double xmin, double xmax, double ymin, double ymax, double vp_max,
-							 int use_mpml_xmin, int use_mpml_xmax, int use_mpml_ymin, int use_mpml_ymax,
-							 double *mpml_dx, double *mpml_dy, double *mpml_dxx, double *mpml_dyy, double *mpml_dxx_pyx, double *mpml_dyy_pxy)
+					 int mpml_nx, int mpml_ny, double h, double xmin, double xmax, double ymin, double ymax, double vp_max,
+					 int use_mpml_xmin, int use_mpml_xmax, int use_mpml_ymin, int use_mpml_ymax,
+					 double *mpml_dx, double *mpml_dy, double *mpml_dxx, double *mpml_dyy, double *mpml_dxx_pyx, double *mpml_dyy_pxy)
 /******************************************************************************/
 /*
   Purpose:
@@ -129,20 +129,12 @@ void abc_mpml(int node_num, int element_num, int element_order, int *element_nod
 			else if ((x <= xmin_mpml) && (y >= ymax_mpml) && ((use_mpml_xmin == 1) || (use_mpml_ymax == 1)))
 			{
 
-				if (use_mpml_ymax == 1)
-				{
-					mpml_dx[p] = d0_x * ((xmin_mpml - x) / mpml_x_thick) * ((xmin_mpml - x) / mpml_x_thick) +
-								 pxy * d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick);
-					mpml_dy[p] = d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick) +
-								 pyx * d0_x * ((xmin_mpml - x) / mpml_x_thick) * ((xmin_mpml - x) / mpml_x_thick);
-					mpml_dyy[p] = d0_y * 2 * (y - ymax_mpml) / (mpml_y_thick * mpml_y_thick);
-				}
-				else
-				{
-					mpml_dx[p] = d0_x * ((xmin_mpml - x) / mpml_x_thick) * ((xmin_mpml - x) / mpml_x_thick);	   //  modified here, for surface wave
-					mpml_dy[p] = pyx * d0_x * ((xmin_mpml - x) / mpml_x_thick) * ((xmin_mpml - x) / mpml_x_thick); //  modified here, for surface wave
-					mpml_dyy[p] = 0.0;																			   //  modified here, for surface wave
-				}
+				mpml_dx[p] = d0_x * ((xmin_mpml - x) / mpml_x_thick) * ((xmin_mpml - x) / mpml_x_thick) +
+							 pxy * d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick);
+				mpml_dy[p] = d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick) +
+							 pyx * d0_x * ((xmin_mpml - x) / mpml_x_thick) * ((xmin_mpml - x) / mpml_x_thick);
+				mpml_dyy[p] = d0_y * 2 * (y - ymax_mpml) / (mpml_y_thick * mpml_y_thick);
+
 				mpml_dxx[p] = -d0_x * 2 * (xmin_mpml - x) / (mpml_x_thick * mpml_x_thick);
 				mpml_dxx_pyx[p] = pyx * mpml_dxx[p];
 				mpml_dyy_pxy[p] = pxy * mpml_dyy[p];
@@ -151,11 +143,22 @@ void abc_mpml(int node_num, int element_num, int element_order, int *element_nod
 			// area 23
 			else if ((x >= xmax_mpml) && (y <= ymin_mpml) && ((use_mpml_xmax == 1) || (use_mpml_ymin == 1)))
 			{
-				mpml_dx[p] = d0_x * ((x - xmax_mpml) / mpml_x_thick) * ((x - xmax_mpml) / mpml_x_thick) +
+
+				if (use_mpml_ymax == 1)
+				{
+				mpml_dx[p] = d0_x * ((x - xmax_mpml) / mpml_x_thick) * ((x - xmax_mpml) / mpml_x_thick) + \
 							 pxy * d0_y * ((ymin_mpml - y) / mpml_y_thick) * ((ymin_mpml - y) / mpml_y_thick);
 				mpml_dxx[p] = d0_x * 2 * (x - xmax_mpml) / (mpml_x_thick * mpml_x_thick);
-				mpml_dy[p] = d0_y * ((ymin_mpml - y) / mpml_y_thick) * ((ymin_mpml - y) / mpml_y_thick) +
+				mpml_dy[p] = d0_y * ((ymin_mpml - y) / mpml_y_thick) * ((ymin_mpml - y) / mpml_y_thick) + \
 							 pyx * d0_x * ((x - xmax_mpml) / mpml_x_thick) * ((x - xmax_mpml) / mpml_x_thick);
+				}
+				else 
+				{
+				mpml_dx[p] =  pxy * d0_y * ((ymin_mpml - y) / mpml_y_thick) * ((ymin_mpml - y) / mpml_y_thick);
+				mpml_dxx[p] = 0.0;
+				mpml_dy[p] = d0_y * ((ymin_mpml - y) / mpml_y_thick) * ((ymin_mpml - y) / mpml_y_thick);
+
+				}
 				mpml_dyy[p] = -d0_y * 2 * (ymin_mpml - y) / (mpml_y_thick * mpml_y_thick);
 				mpml_dxx_pyx[p] = pyx * mpml_dxx[p];
 				mpml_dyy_pxy[p] = pxy * mpml_dyy[p];
@@ -171,15 +174,16 @@ void abc_mpml(int node_num, int element_num, int element_order, int *element_nod
 								 pxy * d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick);
 					mpml_dy[p] = d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick) +
 								 pyx * d0_x * ((x - xmax_mpml) / mpml_x_thick) * ((x - xmax_mpml) / mpml_x_thick);
-					mpml_dyy[p] = d0_y * 2 * (y - ymax_mpml) / (mpml_y_thick * mpml_y_thick);
+					mpml_dxx[p] = d0_x * 2 * (x - xmax_mpml) / (mpml_x_thick * mpml_x_thick);
+
 				}
 				else
 				{
-					mpml_dx[p] = d0_x * ((x - xmax_mpml) / mpml_x_thick) * ((x - xmax_mpml) / mpml_x_thick);	   //  modified here, for surface wave
-					mpml_dy[p] = pyx * d0_x * ((x - xmax_mpml) / mpml_x_thick) * ((x - xmax_mpml) / mpml_x_thick); //  modified here, for surface wave
-					mpml_dyy[p] = 0.0;																			   //  modified here, for surface wave
+					mpml_dx[p] = pxy * d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick);	   //  modified here, for surface wave
+					mpml_dy[p] = d0_y * ((y - ymax_mpml) / mpml_y_thick) * ((y - ymax_mpml) / mpml_y_thick); //  modified here, for surface wave
+					mpml_dxx[p] = 0.0;																			   //  modified here, for surface wave
 				}
-				mpml_dxx[p] = d0_x * 2 * (x - xmax_mpml) / (mpml_x_thick * mpml_x_thick);
+				mpml_dyy[p] = d0_y * 2 * (y - ymax_mpml) / (mpml_y_thick * mpml_y_thick);
 				mpml_dxx_pyx[p] = pyx * mpml_dxx[p];
 				mpml_dyy_pxy[p] = pxy * mpml_dyy[p];
 			}

@@ -13,7 +13,7 @@ nx = sqrt(node_num);
 ny = sqrt(node_num);
 figure(1)
 caxis_value = 0.1;
-for time = 1 : 20 : step
+for time = 1 : 5 : step
 %     uu=reshape(u(time,:),[nx, ny]);
 %     ww=reshape(w(time,:),[nx, ny]);
     uu = u(time,:);
@@ -22,12 +22,12 @@ for time = 1 : 20 : step
     subplot(1,2,1)
     %imagesc(uu);
     scatter(x, y, 50, uu);
-    pbaspect([ 1 1 1 ]);
+    pbaspect([ 1 0.5 1 ]);
     caxis([-caxis_value caxis_value]);
     subplot(1,2,2)
     %imagesc(ww);
     scatter(x, y, 50, ww);
-    pbaspect([ 1 1 1 ]);
+    pbaspect([ 1 0.5 1 ]);
     caxis([-caxis_value caxis_value]);
     hold off
     drawnow

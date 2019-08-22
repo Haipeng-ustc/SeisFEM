@@ -7,13 +7,9 @@
 #include "../mesh/element_type.c"
 #include "../mesh/mesh_element_order.c"
 #include "../mesh/mesh_node_num.c"
-#include "../mesh/mesh_node_num_read.c"
 #include "../mesh/mesh_element_num.c"
-#include "../mesh/mesh_element_num_read.c"
 #include "../mesh/mesh_element.c"
-#include "../mesh/mesh_element_read.c"
 #include "../mesh/mesh_xy.c"
-#include "../mesh/mesh_xy_read.c"
 #include "../assemble/mass_sparse_all.c"
 #include "../assemble/stif_sparse_all.c"
 #include "../model/elastic_model.c"
@@ -59,11 +55,10 @@ int main()
   int i, j;
   char *type;
   char *solver;
-  int type_code = 1;
-  int solver_code = 3;
-  int nelemx = 400;
-  int nelemy = 200;
-  int edge_size = 5;
+  int type_code = 0;
+  int solver_code = 0;
+  int nelemx = 0;
+  int nelemy = 0;
   int pml_nx = 20;
   int pml_ny = 20;
   int node_num = 0;
@@ -75,19 +70,28 @@ int main()
   double xmax;
   double ymin;
   double ymax;
+  double edge_size = 0.0;
   int *element_node = NULL;
   double **node_xy = NULL;
   double program_start_time, program_run_time;
-
+  int use_exterior_mesh = 0;
   /***************************************
         seismic source and receiver	
   ****************************************/
-  double f0 = 10.0;
-  double t0 = 1.2 / 10.0;
+  double f0 = 0.0;
+  double t0 = 0.0;
   int rec_num;
   int src_num;
   int *src_node;
   int *rec_node;
+  double src_x_first;
+  double src_y_first;
+  double src_x_last;
+  double src_y_last;
+  double rec_x_first;
+  double rec_y_first;
+  double rec_x_last;
+  double rec_y_last;
   double *src_x;
   double *src_y;
   double *rec_x;
@@ -95,25 +99,47 @@ int main()
   /***************************************
               time evolution
   ****************************************/
-  int step = 2000;
-  double dt = 0.0005;
+  int step = 0;
+  double dt = 0.0;
 
   /***************************************
               file pointers
   ****************************************/
+  FILE *fp_par;
   FILE *fp_element_node;
   FILE *fp_node_xy;
-  char element_name[30] = "hole_elements_200x400.txt";
-  char node_xy_name[30] = "hole_nodes_200x400.txt";
-  char mesh_par_name[30] = "hole_mesh_par_200x400.txt";
   /***************************************
             prepare parameters
   ****************************************/
   program_start_time = omp_get_wtime();
-  xmin = 0.0;
-  ymin = 0.0;
-  xmax = edge_size * nelemx;
-  ymax = edge_size * nelemy;
+
+  if ((fp_par = fopen("par.txt", "r")) == NULL)
+    printf("\n can not open par.txt file\n");
+  fscanf(fp_par, "## Mesh parameters\n");
+  fscanf(fp_par, "use_exterior_mesh = %d\n", &use_exterior_mesh);
+  fscanf(fp_par, "type_code = %d\n", &type_code);
+  fscanf(fp_par, "nelemx = %d\n", &nelemx);
+  fscanf(fp_par, "nelemy = %d\n", &nelemy);
+  fscanf(fp_par, "edge_size = %lf\n", &edge_size);
+  fscanf(fp_par, "## source parameters\n");
+  fscanf(fp_par, "f0 = %lf\n", &f0);
+  fscanf(fp_par, "t0 = %lf\n", &t0);
+  fscanf(fp_par, "src_num = %d\n", &src_num);
+  fscanf(fp_par, "src_x_first = %lf\n", &src_x_first);
+  fscanf(fp_par, "src_y_first = %lf\n", &src_y_first);
+  fscanf(fp_par, "src_x_last  = %lf\n", &src_x_last);
+  fscanf(fp_par, "src_y_last  = %lf\n", &src_y_last);
+  fscanf(fp_par, "## receiver parameters\n");
+  fscanf(fp_par, "rec_num = %d\n", &rec_num);
+  fscanf(fp_par, "rec_x_first = %lf\n", &rec_x_first);
+  fscanf(fp_par, "rec_y_first = %lf\n", &rec_y_first);
+  fscanf(fp_par, "rec_x_last  = %lf\n", &rec_x_last);
+  fscanf(fp_par, "rec_y_last  = %lf\n", &rec_y_last);
+  fscanf(fp_par, "## time evolution parameters\n");
+  fscanf(fp_par, "dt = %lf\n", &dt);
+  fscanf(fp_par, "step = %d\n", &step);
+  fscanf(fp_par, "solver_code = %d\n", &solver_code);
+  fclose(fp_par);
 
   /***************************************
     select the element type and mesh model
@@ -121,10 +147,69 @@ int main()
   type = element_type(type_code);
   solver = solver_type(solver_code);
   element_order = mesh_element_order(type);
-  //node_num = mesh_node_num(type, nelemx, nelemy);
-  //element_num = mesh_element_num(type, nelemx, nelemy);
-  node_num = mesh_node_num_read(mesh_par_name);
-  element_num = mesh_element_num_read(mesh_par_name);
+
+  if (use_exterior_mesh == 1)
+  {
+    // use exterior mesh and read the mesh scheme
+    if ((fp_element_node = fopen("./mesh_exterior/element_nodes.txt", "r")) == NULL)
+      printf("\n element file cannot open\n");
+    if ((fp_node_xy = fopen("./mesh_exterior/nodes_xy.txt", "r")) == NULL)
+      printf("\n node_xy file cannot open\n");
+    fscanf(fp_element_node, "%d\n", &element_num);
+    fscanf(fp_node_xy, "%d\n", &node_num);
+    element_node = (int *)malloc(element_order * element_num * sizeof(int));
+    node_xy = (double **)malloc(2 * sizeof(double));
+    for (i = 0; i < 2; i++)
+      node_xy[i] = malloc(sizeof(double) * node_num);
+
+    // read element_node
+    for (i = 0; i < element_num * element_order; i = i + element_order)
+    {
+      for (j = 0; j < element_order; j++)
+      {
+        fscanf(fp_element_node, "%d ", &element_node[i + j]);
+      }
+      fscanf(fp_element_node, "\n");
+    }
+    // read node_xy
+    for (i = 0; i < node_num; i++)
+    {
+      fscanf(fp_node_xy, "%lf %lf\n", &x, &y);
+      node_xy[0][i] = x;
+      node_xy[1][i] = y;
+    }
+    fclose(fp_element_node);
+    fclose(fp_node_xy);
+  }
+  else
+  {
+    // use internal mesh and save the mesh scheme
+    xmin = 0.0;
+    ymin = 0.0;
+    xmax = edge_size * nelemx;
+    ymax = edge_size * nelemy;
+    node_num = mesh_node_num(type, nelemx, nelemy);
+    element_num = mesh_element_num(type, nelemx, nelemy);
+    mesh_element(type, nelemx, nelemy, element_node);
+    mesh_xy(type, nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
+
+    fp_element_node = fopen("./mesh_internal/element_node.txt", "w");
+    fp_node_xy = fopen("./mesh_internal/node_xy.txt", "w");
+    for (i = 0; i < element_num * element_order; i = i + element_order)
+    {
+      for (j = 0; j < element_order; j++)
+        fprintf(fp_element_node, "%d  ", element_node[i + j]);
+      fprintf(fp_element_node, "\n");
+    }
+
+    for (i = 0; i < node_num; i++)
+    {
+      fprintf(fp_node_xy, "%f  %f\n", node_xy[0][i], node_xy[1][i]);
+    }
+    fclose(fp_element_node);
+    fclose(fp_node_xy);
+  }
+
   csr_p_size = node_num + 1;
   nnz = element_num * element_order * element_order;
 
@@ -136,17 +221,8 @@ int main()
   printf("\n csr_p_size is       %d\n", csr_p_size);
   printf("\n None zero number is %d\n", nnz);
   printf("\n solver is           %s\n", solver);
-  element_node = (int *)malloc(element_order * element_num * sizeof(int));
-  node_xy = (double **)malloc(2 * sizeof(double));
-  for (i = 0; i < 2; i++)
-    node_xy[i] = malloc(sizeof(double) * node_num);
 
-  //mesh_element(type, nelemx, nelemy, element_node);
-  //mesh_xy(type, nelemx, nelemy, node_num, xmin, xmax, ymin, ymax, node_xy);
-  mesh_element_read(element_name, element_num, element_order, element_node);
-  mesh_xy_read(node_xy_name, node_num, node_xy);
-
-  rec_num = nelemx - 2 * pml_nx - 1;
+  rec_num = 1;
   src_num = 1;
   rec_node = (int *)malloc(rec_num * sizeof(int));
   rec_x = (double *)malloc(rec_num * sizeof(double));
@@ -157,20 +233,22 @@ int main()
 
   for (i = 0; i < rec_num; i++)
   {
-    rec_x[i] = (pml_nx + 1) * edge_size + i * edge_size;
-    rec_y[i] = ymax - edge_size;
+    //rec_x[i] = (pml_nx + 1) * edge_size + i * edge_size;
+    //rec_y[i] = ymax - edge_size;
+    rec_x[i] = 800;
+    rec_y[i] = 1000;
   }
   for (i = 0; i < src_num; i++)
   {
-    src_x[i] = xmax / 2.0;
+    src_x[i] = xmax;
     src_y[i] = ymax / 2.0;
   }
 
-  set_receiver_node(rec_num, node_num, edge_size, rec_x, rec_y, node_xy, rec_node);
-  set_source_node(src_num, node_num, edge_size, src_x, src_y, node_xy, src_node);
+  //set_receiver_node(rec_num, node_num, edge_size, rec_x, rec_y, node_xy, rec_node);
+  //set_source_node(src_num, node_num, edge_size, src_x, src_y, node_xy, src_node);
 
-  elastic_mpml(type, node_num, element_num, element_order, element_node, node_xy, nnz, csr_p_size, step, dt, f0, t0, edge_size,
-               xmin, xmax, ymin, ymax, pml_nx, pml_ny, src_num, src_node, rec_num, rec_node, solver);
+  // elastic_mpml(type, node_num, element_num, element_order, element_node, node_xy, nnz, csr_p_size, step, dt, f0, t0, edge_size,
+  //             xmin, xmax, ymin, ymax, pml_nx, pml_ny, src_num, src_node, rec_num, rec_node, solver);
 
   /***************************************
               free memory

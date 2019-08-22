@@ -11,7 +11,8 @@ void set_source_node(int src_num, int node_num, double edge_size, double *src_x,
 	int i;
 	double x, y;
 	FILE *fp_source_xy;
-	fp_source_xy = fopen("source_xy.dat", "w");
+	if ((fp_source_xy = fopen("./outputfile/source_location.txt", "w")) == NULL)
+        printf("\n source_location.txt file cannot open\n");
 	if (src_num >= 1)
 	{
 		for (i = 0; i < src_num; i++)

@@ -17,7 +17,7 @@
 #include "../assemble/mass_sparse_all.c"
 #include "../assemble/stif_sparse_all.c"
 #include "../model/elastic_model.c"
-#include "../abc/abc_mpml.c"
+#include "../pml/abc_mpml.c"
 #include "../sparse_matrix/csr_matvec.c"
 #include "../source_receiver/node_location.c"
 #include "../source_receiver/seismic_source.c"

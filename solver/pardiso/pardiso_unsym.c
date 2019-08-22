@@ -77,7 +77,7 @@ int pardiso_unsym( int nnz, int n, int *ia, int *ja, double *a, double *b, doubl
         sscanf( var, "%d", &num_procs );
     else {
         printf("\nOMP_NUM_THREADS is not set \n");
-        printf("\nSet environment: export OMP_NUM_THREADS=1 \n");
+        printf("\nSet environment by taping: export OMP_NUM_THREADS=1 , and try angin ./run_this_example\n");
         exit(1);
     }
     iparm[2]  = num_procs;

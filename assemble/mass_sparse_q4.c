@@ -188,7 +188,7 @@ void mass_sparse_q4(int node_num, int element_num, int element_order, int *eleme
 
     area = 0.5 * fabs(x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) + 0.5 * fabs(x1 * (y4 - y3) + x4 * (y3 - y1) + x3 * (y1 - y4));
 
-    if (area == 0.0)
+    if (area <= 0.0)
     {
       printf("MASS_SPARSE_q4 - Fatal error!\n");
       printf("Zero area for element: %d\n", element);

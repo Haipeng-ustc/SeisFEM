@@ -117,7 +117,7 @@ void mass_sparse_t10(int node_num, int element_num, int element_order, int *elem
 
         area = 0.5 * fabs(x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
 
-        if (area == 0.0)
+        if (area <= 0.0)
         {
             printf("MASS_SPARSE_T10 - Fatal error!\n");
             printf("Zero area for element: %d\n", element);
