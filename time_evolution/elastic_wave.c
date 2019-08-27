@@ -1,6 +1,6 @@
 void elastic_wave(char *type, int node_num, int element_num, int element_order, int *element_node, double **node_xy, int nnz, int csr_p_size, int step, double dt,  \
                   double f0, double t0, double edge_size, double xmin, double xmax, double ymin, double ymax, int pml_nx, int pml_ny, int src_num, int *src_node,   \
-                  int rec_num, int *rec_node, char *solver, int use_exterior_mesh)
+                  int rec_num, int *rec_node, char *solver, int use_exterior_mesh, int free_surface_code)
 {
 
     /*    stiffness matrix List:
@@ -105,9 +105,9 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
      abosorbing bc, mpml parameters
      ****************************************/
     int use_mpml_xmin = 1;
-    int use_mpml_xmax = 0;
+    int use_mpml_xmax = 1; // use_pml_ymax = 0, free surface on ymax.
     int use_mpml_ymin = 1;
-    int use_mpml_ymax = 1; // use_pml_ymax = 0, free surface on ymax.
+    int use_mpml_ymax = 1; 
     double *mpml_dx = NULL;
     double *mpml_dy = NULL;
     double *mpml_dxx = NULL;
@@ -133,6 +133,9 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
     char filename_energy_u[128],     filename_energy_w[128];
     char filename_seismogram_u[128], filename_seismogram_w[128];
 
+    use_mpml_xmax = use_mpml_xmax - free_surface_code;
+    // when no free_surface use_mpml_xmax = 1
+    // when    free_surface use_mpml_xmax = 0
     /****************************************************************************
                                        prepare part
     *****************************************************************************/
@@ -171,36 +174,35 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
     mpml_dyy = (double *)malloc(node_num * sizeof(double));
     mpml_dxx_pyx = (double *)malloc(node_num * sizeof(double));
     mpml_dyy_pxy = (double *)malloc(node_num * sizeof(double));
-
-    model_elastic_parameter(node_num, element_num, element_order, element_node, node_xy, rho, vp, vs, c);
-     if (use_exterior_mesh == 1)
+    if (use_exterior_mesh == 1)
     {
 
-        if ((fp_model_par = fopen("./mesh_exterior/velocity_and_density.txt","r")) == NULL);
-            printf("\n velocity_and_density.txt file cannot open\n");
+       if ((fp_model_par = fopen("./mesh/velocity_and_density.txt","r")) == NULL)
+            printf("\n test velocity_and_density.txt file cannot open\n");
+
         for(i=0;i<node_num;i++)
 	    {
-		    fscanf(fp_model_par,"%lf    %lf %lf	%lf	%lf	%lf	%lf\n", &rho[i],&vp[i],&vs[i],&c[0][i],&c[1][i],&c[2][i],&c[3][i]);	
-	    }
+		    fscanf(fp_model_par,"%lf %lf  %lf  %lf  %lf  %lf  %lf\n", &rho[i],&vp[i],&vs[i],&c[0][i],&c[1][i],&c[2][i],&c[3][i]);	
+        }
 	    fclose(fp_model_par);
     }
     else 
     {
-        fp_model_par = fopen("./mesh_internal/velocity_and_density.txt","w");
+        model_elastic_parameter(node_num, element_num, element_order, element_node, node_xy, rho, vp, vs, c);
+        if ((fp_model_par = fopen("./mesh/velocity_and_density.txt","w")) == NULL)
+            printf("\n velocity_and_density.txt file cannot open\n");
 	    for(i=0;i<node_num;i++)
 	    {
 		    fprintf(fp_model_par,"%f	%f	%f	%f	%f	%f	%f\n", rho[i],vp[i],vs[i],c[0][i],c[1][i],c[2][i],c[3][i]);	
 	    }
 	    fclose(fp_model_par);
     }
-	
     vp_max = vp[0];
     for (i = 0; i < node_num; i++)
     {
         if (vp[i] > vp_max)
             vp_max = vp[i];
     }
-
     abc_mpml(node_num, element_num, element_order, element_node, node_xy, pml_nx, pml_ny, edge_size, xmin, xmax, ymin, ymax, vp_max,
              use_mpml_xmin, use_mpml_xmax, use_mpml_ymin, use_mpml_ymax, mpml_dx, mpml_dy, mpml_dxx, mpml_dyy, mpml_dxx_pyx, mpml_dyy_pxy);
 
@@ -678,7 +680,7 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
                         Ly4_now[i] = rhs_w7[i] / (1.0 * mass_lump[i]);
                     }
                     else
-                        printf("ELASTIC_MPML - Fatal Error: zero value in the mass_csr_lumped"); // in case zero value
+                        printf("ELASTIC_WAVE - Fatal Error: zero value in the mass_csr_lumped\n"); // in case zero value
                 }
             }
             else if (strcmp(solver, "mgmres") == 0)
@@ -891,6 +893,5 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
     free(rhs_w5);
     free(rhs_w6);
     free(rhs_w7);
-
     printf("\n Elastic_wave Normal End!\n");
 }
