@@ -119,6 +119,12 @@ time_evolution:  Most important part! Solve the elastic wave equation with M-PML
 
 ################################################################################################
 
+Note: Please read README file before you run every example!
+      The seisfem code is not that robust and there are some technique tricks need close attention
+      to get things work well. 
+
+
+################################################################################################
 
 
 

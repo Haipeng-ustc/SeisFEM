@@ -1,0 +1,25 @@
+################################################################################################
+#											       #
+#  The seisfem is a 2D Finite Element code to simulate the elastic wave propagation problem,   #
+#  which is developed by Haipeng Li. All the algorithm design is finished during my study      #
+#  at University of Tulsa in Jingyi Chen's group, and the code is rewritten into c during my   #
+#  intern in the Aramco Beijing Research Center.					       #
+#  If you have any problem, please contact me by email: hal5083@utulsa.edu		       #
+#											       #
+################################################################################################
+
+Here is example showing the surface wave problem. 
+
+Note: Please note that the xmax boundary is set to be free surface because of the some problem of the 
+M-PML damping profile. So if you want run some example alike properly, write the node_xy.txt 
+in the format(y,x) instead of (x,y).
+
+
+
+Please choose the time step very carefully, and stop the simulation once the shear wave propagate
+out of the domain, otherwise the instability problem will occur. 
+
+The instability is caused by M-PML and mass lumped technique. If you choose to use Pardiso to 
+actually solver the linear system, there will be instability problem,  but the simulation time is very long!
+
+You can use the wave_plot.m subroutine to check the wavefield which is in outputfile.
