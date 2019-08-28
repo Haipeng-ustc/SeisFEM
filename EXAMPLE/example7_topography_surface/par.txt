@@ -1,0 +1,35 @@
+## Mesh parameters
+use_exterior_mesh = 1
+type_code = 1
+nelemx = 0
+nelemy = 0
+edge_size = 10.0
+## source parameters
+f0 = 10.0
+t0 = 0.0
+src_num = 1
+src_x_first = 2000.0
+src_y_first = 2000.0
+src_x_last  = 2000.0
+src_y_last  = 2000.0
+## receiver parameters
+rec_num = 81
+rec_x_first = 500.0
+rec_y_first = 100.0
+rec_x_last  = 500.0
+rec_y_last  = 900.0
+## time evolution parameters
+dt = 0.0005
+step = 3000
+solver_code = 3
+free_surface = 1
+
+################################################
+# please do not ever change the format of this 
+# document, even a single space
+###############################################
+
+
+
+
+

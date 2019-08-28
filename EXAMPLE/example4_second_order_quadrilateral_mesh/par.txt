@@ -20,7 +20,7 @@ rec_x_last  = 1000.0
 rec_y_last  = 0.0
 ## time evolution parameters
 dt = 0.0005
-step = 800
+step = 1000
 solver_code = 3
 free_surface = 0
 ################################################

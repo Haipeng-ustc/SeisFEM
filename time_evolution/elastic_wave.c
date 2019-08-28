@@ -114,7 +114,7 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
     double *mpml_dyy = NULL;
     double *mpml_dxx_pyx = NULL;
     double *mpml_dyy_pxy = NULL;
-
+    int *Dirichlet_boundary_node_flag = NULL;
     /***************************************
                   file pointers
      ****************************************/
@@ -132,6 +132,27 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
 	char filename_wavefield_u[128],  filename_wavefield_w[128];
     char filename_energy_u[128],     filename_energy_w[128];
     char filename_seismogram_u[128], filename_seismogram_w[128];
+
+    Dirichlet_boundary_node_flag = (int *)malloc(node_num * sizeof(int));
+    for( i =0;i<node_num;i++)
+    {
+        if(free_surface_code == 0)
+        {
+            if( (node_xy[0][i] <= xmin + edge_size/4.0)|| (node_xy[0][i] >= xmax - edge_size/4.0)  || (node_xy[1][i] <= ymin + edge_size/4.0) || (node_xy[1][i] >= ymax - edge_size/4.0) )
+            {
+                Dirichlet_boundary_node_flag[i] = 1;
+            }
+        }
+        else
+        {
+            if( (node_xy[0][i] <= xmin + edge_size/4.0) || (node_xy[1][i] <= ymin + edge_size/4.0) || (node_xy[1][i] >= ymax - edge_size/4.0) )
+            {
+                Dirichlet_boundary_node_flag[i] = 1;
+            }
+        }
+        
+      
+    }
 
     use_mpml_xmax = use_mpml_xmax - free_surface_code;
     // when no free_surface use_mpml_xmax = 1
@@ -494,11 +515,11 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
         //fprintf(fp_energy_w, "%f\n%f\n", Energy_w[0], Energy_w[1]);
 
         // begin iteration: from 0 to step-1, time = (step + 1) * dt
-        printf("\nTime iteration begin:\n");
+        printf("\n****Time iteration begin:\n");
         for (it = 2; it < step; it++)
         {
             time = (it + 1) * dt;
-            if ((it + 1) % 50 == 0)
+            if ((it + 1) % 100 == 0)
                 printf("\n ****Iteration step: %-d, time: %-f s\n ", it + 1, time);
             Energy_u[it] = 0.0;
             Energy_w[it] = 0.0;
@@ -664,20 +685,43 @@ void elastic_wave(char *type, int node_num, int element_num, int element_order, 
                 {
                     if (mass_lump[i] != 0.0)
                     {
-                        U1tt_new[i] = rhs_u1[i] / (1.0 * mass_lump[i]);
-                        U2tt_new[i] = rhs_u2[i] / (1.0 * mass_lump[i]);
-                        U3tt_new[i] = rhs_u3[i] / (1.0 * mass_lump[i]);
-                        Lx1_now[i] = rhs_u4[i] / (1.0 * mass_lump[i]);
-                        Lx2_now[i] = rhs_u5[i] / (1.0 * mass_lump[i]);
-                        Lx3_now[i] = rhs_u6[i] / (1.0 * mass_lump[i]);
-                        Lx4_now[i] = rhs_u7[i] / (1.0 * mass_lump[i]);
-                        W1tt_new[i] = rhs_w1[i] / (1.0 * mass_lump[i]);
-                        W2tt_new[i] = rhs_w2[i] / (1.0 * mass_lump[i]);
-                        W3tt_new[i] = rhs_w3[i] / (1.0 * mass_lump[i]);
-                        Ly1_now[i] = rhs_w4[i] / (1.0 * mass_lump[i]);
-                        Ly2_now[i] = rhs_w5[i] / (1.0 * mass_lump[i]);
-                        Ly3_now[i] = rhs_w6[i] / (1.0 * mass_lump[i]);
-                        Ly4_now[i] = rhs_w7[i] / (1.0 * mass_lump[i]);
+                        
+                        if( Dirichlet_boundary_node_flag[i]==1 )
+                        {
+                            U1tt_new[i] = 0.0;
+                            U2tt_new[i] = 0.0;
+                            U3tt_new[i] = 0.0;
+                            Lx1_now[i] = 0.0;
+                            Lx2_now[i] = 0.0;
+                            Lx3_now[i] = 0.0;
+                            Lx4_now[i] = 0.0;
+                            W1tt_new[i] = 0.0;
+                            W2tt_new[i] = 0.0;
+                            W3tt_new[i] = 0.0;
+                            Ly1_now[i] = 0.0;
+                            Ly2_now[i] = 0.0;
+                            Ly3_now[i] = 0.0;
+                            Ly4_now[i] = 0.0;
+
+                        }
+                        else 
+                        {
+                            U1tt_new[i] = rhs_u1[i] / (1.0 * mass_lump[i]);
+                            U2tt_new[i] = rhs_u2[i] / (1.0 * mass_lump[i]);
+                            U3tt_new[i] = rhs_u3[i] / (1.0 * mass_lump[i]);
+                            Lx1_now[i] = rhs_u4[i] / (1.0 * mass_lump[i]);
+                            Lx2_now[i] = rhs_u5[i] / (1.0 * mass_lump[i]);
+                            Lx3_now[i] = rhs_u6[i] / (1.0 * mass_lump[i]);
+                            Lx4_now[i] = rhs_u7[i] / (1.0 * mass_lump[i]);
+                            W1tt_new[i] = rhs_w1[i] / (1.0 * mass_lump[i]);
+                            W2tt_new[i] = rhs_w2[i] / (1.0 * mass_lump[i]);
+                            W3tt_new[i] = rhs_w3[i] / (1.0 * mass_lump[i]);
+                            Ly1_now[i] = rhs_w4[i] / (1.0 * mass_lump[i]);
+                            Ly2_now[i] = rhs_w5[i] / (1.0 * mass_lump[i]);
+                            Ly3_now[i] = rhs_w6[i] / (1.0 * mass_lump[i]);
+                            Ly4_now[i] = rhs_w7[i] / (1.0 * mass_lump[i]);
+                        }
+
                     }
                     else
                         printf("ELASTIC_WAVE - Fatal Error: zero value in the mass_csr_lumped\n"); // in case zero value
