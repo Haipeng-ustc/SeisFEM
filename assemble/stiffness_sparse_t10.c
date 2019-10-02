@@ -64,7 +64,7 @@ void stiffness_sparse_t10(int node_num, int element_num, int element_order,  int
     coo_index = 0; // for coo format sparse matrix index
     for(i = 0; i < element_num * element_order * element_order; i++)
     {
-            stiffi[i] = 0;
+        stiffi[i] = 0;
 	    stiffj[i] = 0;
 	    stiffness[i]  = 0.0;
     }

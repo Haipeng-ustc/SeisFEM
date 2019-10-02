@@ -116,10 +116,10 @@ void mass_sparse_q16(int node_num, int element_num, int element_order, int *elem
     stab[29] = f;
     stab[30] = a;
     stab[31] = b;
-    stab[28] = c;
-    stab[29] = d;
-    stab[30] = e;
-    stab[31] = f;
+    stab[32] = c;
+    stab[33] = d;
+    stab[34] = e;
+    stab[35] = f;
 
     weight[0] = 0.007338020422245;
     weight[1] = 0.015451823343096;
@@ -178,8 +178,8 @@ void mass_sparse_q16(int node_num, int element_num, int element_order, int *elem
     {
         p1 = element_node[0 + element] - 1;
         p2 = element_node[3 + element] - 1;
-        p3 = element_node[12 + element] - 1;
-        p4 = element_node[15 + element] - 1;
+        p3 = element_node[15 + element] - 1;
+        p4 = element_node[12 + element] - 1;
         x1 = node_xy[0][p1];
         y1 = node_xy[1][p1];
         x2 = node_xy[0][p2];
