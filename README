@@ -4,7 +4,7 @@
 #  which is developed by Haipeng Li. All the algorithm design is finished during my study      #
 #  at University of Tulsa in Jingyi Chen's group, and the code is rewritten into c during my   #
 #  intern in the Aramco Beijing Research Center.					       #
-#  If you have any problem, please contact me by email: hal5083@utulsa.edu		       #
+#  If you have any problem, please contact me by email: haipengl@mail.ustc.edu.cn              #
 #											       #
 ################################################################################################
 
@@ -39,7 +39,7 @@ Doc: Some materials about finite element.
 
 ################################################################################################
 
-Example:  Some examples is provided here, you can tell their simulation type by their names:
+Example:  Some examples are provided here, you can tell their simulation type by their names:
 	 
 	  example1_first_order_triangular_mesh
 	  example2_first_order_quadrilateral_mesh
@@ -70,7 +70,7 @@ model_elastic_parameters: Define velocity and density file for structured mesh s
 
 ################################################################################################
 
-openmp: Just an example to show how to use openmp and it is not related with other functions.
+openmp: An example to show how to use openmp and it is not related with other functions.
 
 ################################################################################################
 
@@ -121,7 +121,7 @@ time_evolution:  Most important part! Solve the elastic wave equation with M-PML
 
 Note: Please read README file before you run every example!
       The seisfem code is not that robust and there are some technique tricks need close attention
-      to get things work well. 
+      paid to get things work well. 
 
 
 ################################################################################################
