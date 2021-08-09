@@ -2,8 +2,8 @@
 #											       #
 #  The seisfem is a 2D Finite Element code to simulate the elastic wave propagation problem,   #
 #  which is developed by Haipeng Li. All the algorithm design is finished during my study      #
-#  at University of Tulsa in Jingyi Chen's group, and the code is rewritten into c during my   #
-#  intern in the Aramco Beijing Research Center.					       #
+#  at University of Tulsa in Jingyi Chen's group and the code is rewritten into c during my    #
+#  later study.					       #
 #  If you have any problem, please contact me by email: haipengl@mail.ustc.edu.cn              #
 #											       #
 ################################################################################################
