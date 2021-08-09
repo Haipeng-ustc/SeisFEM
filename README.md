@@ -56,14 +56,16 @@ Provided examples. You can tell their simulation types by their names:
 
 Finite Element Method library from: https://people.sc.fsu.edu/~jburkardt/f_src/f_src.html.
 
-    Both Fortran and C libraries are included here. They can be very helpful for the beginner of the Finite Element Method to write their own code.
+    Both Fortran and C libraries are included here. 
+    They can be very helpful for the beginner of the Finite Element Method to write their own code.
 
 ## mesh: 
 
 Perform the mesh of the computational domain using the structured mesh scheme.
 
 ```bash
-If you want to use an unstructured mesh scheme, please refer to the EXAMPLE/example7_topography_surface.  You can generate the mesh by yourself and run the simulation. 
+If you want to use an unstructured mesh scheme, please refer to the EXAMPLE/example7_topography_surface.  
+You can generate the mesh by yourself and run the simulation. 
 ```
 
 ## model_elastic_parameters: 
@@ -71,7 +73,8 @@ If you want to use an unstructured mesh scheme, please refer to the EXAMPLE/exam
 Define velocity and density files for the structured mesh schemes.
 
 ```bash
-If you want to use an unstructured mesh scheme, you need to define the velocity and density files by yourself according to the your mesh schemes. Please refer to the EXAMPLE/example7_topography_surface
+If you want to use an unstructured mesh scheme, you need to define the velocity and density files by 
+yourself according to the your mesh schemes. Please refer to the EXAMPLE/example7_topography_surface
 ```
 
 ## openmp: 
@@ -82,7 +85,8 @@ An example to show how to use openmp and it is not related to other functions.
 
 Set absorbing boundary condition. 
 
-    I use M-PML developed by myself. You can modify this code to use the PML or C-PML damping profiles, and some corresponding modifications need to be made in the folder: time_evolution/elastic_wave.c. 
+    I use M-PML developed by myself. You can modify this code to use the PML or C-PML damping profiles, 
+    and some corresponding modifications need to be made in the folder: time_evolution/elastic_wave.c. 
 
 ## seisfem: 
 
@@ -94,7 +98,10 @@ Set absorbing boundary condition.
 
 ## solver: 
 
-Some packages for solving the linear system, including SuperLU_5.2.1 and Paradiso packages. But I would like to recommend using the mass-lumped to solve the linear equation. Although the mass-lumped technique may cause a long-time simulation unstable problem, you can carefully choose the time step to avoid this problem.
+Some packages for solving the linear system, including SuperLU_5.2.1 and Paradiso packages. 
+But I would like to recommend using the mass-lumped to solve the linear equation. 
+Although the mass-lumped technique may cause a long-time simulation unstable problem, 
+you can carefully choose the time step to avoid this problem.
 
 ```bash
 SOLVER_TYPE List:
@@ -104,7 +111,8 @@ SOLVER_TYPE List:
 	2  mgmres         Generalized Minimum Residual (GMRES) algorithm, CSR format;
 	3  masslump       Mass lump technique.
 	
-Note: pardiso packages require a license. You need to get your own license and replace pardiso packages using your own packages and license, which you can get from: https://www.pardiso-project.org
+Note: pardiso packages require a license. You need to get your own license and replace pardiso
+packages using your own packages and license, which you can get from: https://www.pardiso-project.org
 ```
 
 ## source_receiver: 
@@ -120,4 +128,5 @@ Solve the elastic wave equation with M-PML, update the wavefiled, and save wavef
 
 
 ## Note
-Please read the README file before you run every example. The seisfem code is not that robust and please pay close attention to get things to work well. 
+Please read the README file before you run every example. 
+The seisfem code is not that robust and please pay close attention to get things to work well. 
