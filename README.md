@@ -7,7 +7,10 @@ Contact: haipengl@mail.ustc.edu.cn
 ![](./Doc/logo/logo.png)
 
 ```bash
-The SeisFEM is a 2D Finite Element code to simulate the elastic wave propagations. All the algorithm design is finished during my study at the University of Tulsa supervised by Prof. Jingyi Chen. The FEM code was rewritten into C during my later study. If you have any problem, please contact me by email: haipengl@mail.ustc.edu.cn 
+The SeisFEM is a 2D Finite Element code to simulate the elastic wave propagations. 
+All the algorithm design is finished during my study at the University of Tulsa 
+supervised by Prof. Jingyi Chen. The FEM code was rewritten into C during my later study.
+If you have any problem, please contact me by email: haipengl@mail.ustc.edu.cn 
 ```
 
 
@@ -20,7 +23,7 @@ You can use different element types and here is the element type list:
 
 	     I  ELEMENT_TYPE   Definition
 		   -  ------------   ----------
-		   1  T3              3 node linear triangle;
+	     1  T3              3 node linear triangle;
 	     2  T6              6 node quadratic triangle;
 	     3  T10            10 node cubic triangle.
 	     4  Q4              4 node linear Lagrange/serendipity quadrilateral;
@@ -97,7 +100,7 @@ Some packages for solving the linear system, including SuperLU_5.2.1 and Paradis
 SOLVER_TYPE List:
 	I  SOLVER_TYPE    Definition
 	-  ------------   ----------
-  1  pardiso        Require license and only valid for username: haipeng;
+        1  pardiso        Require license and only valid for username: haipeng;
 	2  mgmres         Generalized Minimum Residual (GMRES) algorithm, CSR format;
 	3  masslump       Mass lump technique.
 	
