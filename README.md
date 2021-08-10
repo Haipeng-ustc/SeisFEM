@@ -13,6 +13,10 @@ supervised by Prof. Jingyi Chen. The FEM code was rewritten into C during my lat
 If you have any problem, please contact me by email: haipengl@mail.ustc.edu.cn 
 ```
 
+# Reference
+Li, H., Chen, J., Zhao, Z., & Li, J. (2021). A multi-axial perfectly matched layer for finite-element
+time-domain simulation of anisotropic elastic wave propagation. Journal of Seismic Exploration,
+30, 173-200.
 
 
 # Descriptions of each folder
@@ -33,12 +37,6 @@ You can use different element types and here is the element type list:
 	Note: T10 and Q16 element types require too many memories and take ages to finish the simulation.
 
 ## backup 
-
-# Reference
-Li, H., Chen, J., Zhao, Z., & Li, J. (2021). A multi-axial perfectly matched layer for finite-element
-time-domain simulation of anisotropic elastic wave propagation. Journal of Seismic Exploration,
-30, 173-200.
-
 Old codes, just in case need to use them one day.
 
 ## Doc
