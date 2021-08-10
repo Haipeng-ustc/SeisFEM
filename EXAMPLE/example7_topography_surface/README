@@ -8,6 +8,6 @@ Please choose the time step very carefully, and stop the simulation once the she
 out of the domain, otherwise, the instability problem will occur. 
 
 The instability is caused by M-PML and the mass lumped technique. If you choose to use Pardiso to 
-actually solver the linear system, there will be instability problem,  but the simulation time is very long!
+actually solver the linear system, there will be no instability problem,  but the simulation time is very long!
 
 You can use the wave_plot.m subroutine to check the wavefield which is in output file.
